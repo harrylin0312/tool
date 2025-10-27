@@ -9,10 +9,10 @@
     height: 100%;
     margin: 0;
     padding: 0;
+    background-color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #fff;
   }
 
   .container {
@@ -22,26 +22,52 @@
     align-items: center;
     height: 100%;
     width: 100%;
+    text-align: center;
   }
 
   .container div {
-    font-size: 40vh; /* 高度的百分比，讓字體盡量填滿 */
-    line-height: 1;
     margin: 0;
-  }
-
-  /* 手機調整 */
-  @media (max-width: 768px) {
-    .container div {
-      font-size: 25vw; /* 小螢幕用寬度百分比 */
-    }
+    line-height: 1;
   }
 </style>
 </head>
 <body>
   <div class="container">
-    <div>不</div>
-    <div>要</div>
+    <div id="char1">不</div>
+    <div id="char2">要</div>
   </div>
+
+  <script>
+    function adjustFontSize() {
+      const container = document.querySelector('.container');
+      const char1 = document.getElementById('char1');
+      const char2 = document.getElementById('char2');
+
+      const containerHeight = window.innerHeight;
+      const containerWidth = window.innerWidth;
+
+      // 兩行字，字體大小取螢幕高度的一半
+      let fontSize = containerHeight / 2;
+
+      // 防止寬度太小導致字超出螢幕
+      const maxFontSizeByWidth = containerWidth * 0.9; // 保留一點邊距
+      if (fontSize > maxFontSizeByWidth) {
+        fontSize = maxFontSizeByWidth;
+      }
+
+      char1.style.fontSize = fontSize + 'px';
+      char2.style.fontSize = fontSize + 'px';
+    }
+
+    window.addEventListener('resize', adjustFontSize);
+    window.addEventListener('load', () => {
+      adjustFontSize();
+
+      // 0.7秒後跳轉
+      setTimeout(() => {
+        window.location.href = "https://harrylin0312.github.io/tool/Metro_Man";
+      }, 700);
+    });
+  </script>
 </body>
 </html>
