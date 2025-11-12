@@ -1,0 +1,16 @@
+{
+  "name": "icon demo",
+  "short_name": "icon",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "32x32 64x64 128x128 180x180 192x192 512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
