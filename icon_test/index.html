@@ -22,5 +22,22 @@
 
 <body style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;">
   <img src="./icon.svg" alt="icon.svg 測試" style="width:200px;height:200px;">
+<script>
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+  function updateBackground(e) {
+    if (e.matches) {
+      document.body.style.backgroundColor = '#000';
+    } else {
+      document.body.style.backgroundColor = '#fff';
+    }
+  }
+
+  // 初始設定
+  updateBackground(mediaQuery);
+
+  // 監聽即時切換
+  mediaQuery.addEventListener('change', updateBackground);
+</script>
 </body>
 </html>
