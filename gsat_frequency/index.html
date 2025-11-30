@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV 表格檢視</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="webview-message" style="display:none; color:red; font-size:1.2em;">請用瀏覽器開啟以顯示內容</div>
+    <div id="info" style="display:none;">
+        <ul id="info-list"></ul>
+    </div>
+    <div id="content">
+        <table id="csv-table" border="1">
+            <thead id="csv-header"></thead>
+            <tbody id="csv-body"></tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadCSV() {
+            try {
+                const response = await fetch('form.csv');
+                const csvText = await response.text();
+                const rows = csvText.split(/\r?\n/).slice(0, 101); // 前100列 + 標題列
+                const headerRow = rows[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // 避免逗號在引號內被拆
+                const header = document.getElementById('csv-header');
+                const headerTr = document.createElement('tr');
+                headerRow.forEach(cell => {
+                    const th = document.createElement('th');
+                    th.textContent = cell.replace(/^"|"$/g, '').trim();
+                    headerTr.appendChild(th);
+                });
+                header.appendChild(headerTr);
+
+                const tbody = document.getElementById('csv-body');
+                for (let i = 1; i < rows.length; i++) {
+                    if (!rows[i].trim()) continue;
+                    const tr = document.createElement('tr');
+                    const cells = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    cells.forEach(cell => {
+                        const td = document.createElement('td');
+                        td.textContent = cell.replace(/^"|"$/g, '').trim();
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                }
+            } catch (error) {
+                console.error('讀取 CSV 失敗:', error);
+            }
+        }
+
+        loadCSV();
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyBZk6RyastOQYGA7t3nq5TVG6sekzzyGWY",
+          authDomain: "temporary-information.firebaseapp.com",
+          projectId: "temporary-information",
+          storageBucket: "temporary-information.firebasestorage.app",
+          messagingSenderId: "136238916388",
+          appId: "1:136238916388:web:a68a45727d6f78627fc9b1"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        var db = firebase.firestore();
+        window.db = db; // 確保全域可用
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
