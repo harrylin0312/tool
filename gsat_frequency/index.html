@@ -51,7 +51,19 @@
             }
         }
 
-        loadCSV();
+        // 判斷是否為 WebView 環境
+        function isWebView() {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            // 一般簡單判斷 WebView 的方式，依實際情況可調整
+            return (/wv/.test(userAgent) || /WebView/.test(userAgent) || /; wv\)/.test(userAgent));
+        }
+
+        if (isWebView()) {
+            document.getElementById('content').style.display = 'none';
+            document.getElementById('webview-message').style.display = 'block';
+        } else {
+            loadCSV();
+        }
     </script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
