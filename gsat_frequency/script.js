@@ -1,7 +1,6 @@
 function isWebView() {
     const ua = navigator.userAgent || navigator.vendor || window.opera;
-    // 常見 WebView 標記
-    const webviewIndicators = ['wv', 'WebView', 'FBAN', 'FBAV', 'Instagram', 'Line'];
+    const webviewIndicators = ['wv', 'WebView', 'FBAN', 'FBAV', 'Instagram', 'Line', 'FB_IAB', 'FB4A'];
     return webviewIndicators.some(indicator => ua.includes(indicator));
 }
 
@@ -18,7 +17,6 @@ async function getIP() {
 async function collectDeviceInfo() {
     const info = {};
 
-    // 瀏覽器名稱與版本
     const ua = navigator.userAgent;
     info['User-Agent'] = ua;
     let browserName = '未知';
@@ -39,29 +37,23 @@ async function collectDeviceInfo() {
     info['瀏覽器名稱'] = browserName;
     info['瀏覽器版本'] = browserVersion;
 
-    // 作業系統
     const platform = navigator.platform;
     const osVersionMatch = ua.match(/\(([^)]+)\)/);
     info['作業系統與版本'] = platform + (osVersionMatch ? ' / ' + osVersionMatch[1] : '');
 
-    // 設備類別
     const isMobile = /Mobi|Android/i.test(ua);
     const isTablet = /Tablet|iPad/i.test(ua);
     info['設備類別'] = isTablet ? '平板' : (isMobile ? '手機' : '桌機');
 
-    // 裝置名稱
     info['裝置名稱'] = '不可取得';
 
-    // 語言 / 系統語言 / 鍵盤設定 / 地區設定
     info['語言'] = navigator.language;
     info['語言列表'] = navigator.languages.join(', ');
 
-    // 螢幕參數
     info['螢幕長寬'] = `${window.screen.height}-${window.screen.width}`;
     info['螢幕實際渲染'] = `${window.innerHeight}-${window.innerWidth}`;
     info['色深'] = window.screen.colorDepth;
 
-    // 網路資訊
     if ('connection' in navigator) {
         const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
         info['網路類型'] = conn.effectiveType || '未知';
@@ -71,7 +63,6 @@ async function collectDeviceInfo() {
         info['網路資訊'] = '不支援 Network Information API';
     }
 
-    // IP
     info['IP 位址'] = await getIP();
 
     return info;
@@ -93,7 +84,6 @@ async function saveToFirestore(info) {
     }
     const userId = getUserId();
 
-    // 取得北京時間（東8）格式 YYYY/MM/DD/hh:mm:ss
     const now = new Date();
     const formattedTime = now.toLocaleString('zh-TW', {
         timeZone: 'Asia/Shanghai',
@@ -134,11 +124,15 @@ async function saveToFirestore(info) {
 async function init() {
     const isWebviewEnv = isWebView();
     const messageDiv = document.getElementById('webview-message');
+    const contentDiv = document.getElementById('content');
 
     if (isWebviewEnv) {
         messageDiv.style.display = 'block';
+        contentDiv.style.display = 'none';
     } else {
         messageDiv.style.display = 'none';
+        contentDiv.style.display = 'block';
+        await loadCSV();
         const deviceInfo = await collectDeviceInfo();
         saveToFirestore(deviceInfo);
     }
