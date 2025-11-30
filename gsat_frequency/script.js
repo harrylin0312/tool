@@ -144,7 +144,7 @@ async function loadCSV() {
     try {
         const response = await fetch('form.csv');
         const csvText = await response.text();
-        const rows = csvText.split(/\r?\n/).slice(0, 101); // 前100列 + 標題列
+        const rows = csvText.split(/\r?\n/).slice(0, 723);
 
         const headerRow = rows[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
         const header = document.getElementById('csv-header');
