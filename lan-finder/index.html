@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101a2b">
+<title>LAN Finder｜內網網站探索</title>
+<style>
+:root{color-scheme:dark;--bg:#090f1b;--panel:#142034;--edge:#30415a;--muted:#9db0c9;--light:#f2f7ff;--mint:#78f0cd}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 95% 0,#244763 0,transparent 42%),var(--bg);font:15px/1.55 system-ui,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--light)}
+main{max-width:860px;margin:auto;padding:32px 17px 65px}.tag{font-size:12px;letter-spacing:.15em;font-weight:800;color:var(--mint)}
+h1{font-size:clamp(30px,6vw,44px);letter-spacing:-.04em;margin:12px 0 5px}p{color:var(--muted);margin:8px 0 17px}.layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:#142034e9;border:1px solid var(--edge);border-radius:17px;padding:20px;min-width:0}h2{font-size:17px;margin:0 0 16px}
+label{display:block;font-size:12px;font-weight:700;margin:12px 0 6px}input{font:inherit;width:100%;color:var(--light);background:#0b1525;border:1px solid #465a73;border-radius:10px;padding:11px;min-width:0}
+input:focus{outline:2px solid #78f0cd80}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{font:inherit;border-radius:10px;cursor:pointer;padding:10px 12px;font-weight:700}
+button:disabled{opacity:.4;cursor:default}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.primary{border:0;color:#06241e;background:var(--mint);flex:1}.secondary{background:#1b2c42;border:1px solid #546a82;color:#eaf2ff}
+.hint{font-size:12px;color:var(--muted)}.warning{font-size:12px;line-height:1.7;color:#f7d9a5;background:#4a332057;padding:11px;border:1px solid #775f41;border-radius:10px;margin:16px 0}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:16px}.stat{border:1px solid #354760;border-radius:10px;padding:11px 5px;text-align:center;background:#0c1727}.stat b{font-size:21px;display:block}.stat span{font-size:10px;color:var(--muted)}
+.track{height:7px;background:#2c3e55;border-radius:10px;overflow:hidden}.fill{height:100%;background:var(--mint);width:0;transition:width .1s}
+.log{margin:12px 0;color:var(--muted);font-size:12px;min-height:38px;overflow-wrap:anywhere}
+.results{max-height:360px;overflow:auto;margin-top:12px}.result{padding:11px 0;border-bottom:1px solid #33445c;display:flex;justify-content:space-between;align-items:center;gap:9px}.result a{min-width:0;color:var(--mint);overflow-wrap:anywhere;font-size:13px}
+.badge{font-size:11px;border:1px solid #46616b;padding:4px 9px;border-radius:30px;color:#abebd9}
+.summary{font-size:12px;color:var(--muted);margin:10px 0}.diagnostic{margin-top:14px;padding:17px;border:1px solid var(--edge);border-radius:15px;background:#101c2e}
+a{color:var(--mint)}.small{font-size:12px}.cta{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+@media(max-width:680px){.layout{grid-template-columns:1fr}.card{padding:16px}}
+</style>
+</head>
+<body>
+<main>
+<div class="tag">◉ LAN FINDER · LOCAL DISCOVERY</div>
+<h1>找回你的內網網站</h1>
+<p>在你的 Wi-Fi 裡測試常見網址，僅列出<strong>瀏覽器確認有回應</strong>的 Web 服務。此頁不使用外部程式庫，也不會把掃描結果上傳。</p>
+<div class="warning"><strong>iPhone／Safari 限制：</strong>這是實驗性「瀏覽器探測」，不是完整 Port Scanner。GitHub Pages 使用 HTTPS，可能阻擋存取家中 HTTP 服務；HTTPS 憑證錯誤、區域網路權限也會造成漏報。掃描為 0 不代表家裡沒有網站。</div>
+<div class="layout">
+<section class="card">
+<h2>掃描範圍</h2>
+<label for="subnet">IPv4 前三段</label><input id="subnet" value="192.168.1" inputmode="decimal" autocomplete="off" spellcheck="false">
+<div class="hint">例如 iPhone IP 是 192.168.50.7，這裡填 192.168.50</div>
+<div class="twocol"><div><label for="from">起始尾碼</label><input type="number" id="from" min="1" max="254" value="1"></div><div><label for="to">結束尾碼</label><input type="number" id="to" min="1" max="254" value="254"></div></div>
+<label for="ports">要測試的 Port（以逗號隔開）</label>
+<input id="ports" value="80,443,3000,5000,5001,8080,8123,8443,9000" spellcheck="false">
+<div class="hint">預設 443、5001、8443 使用 HTTPS，其餘使用 HTTP；最多 20 個 Port。</div>
+<div class="row" style="margin-top:17px"><button class="primary" id="start">開始掃描</button><button class="secondary" id="stop" disabled>停止</button></div>
+</section>
+<section class="card">
+<div class="row" style="justify-content:space-between"><h2 style="margin-bottom:8px">有回應的網址</h2><span class="badge" id="status">未開始</span></div>
+<div class="statgrid"><div class="stat"><b id="found">0</b><span>有回應</span></div><div class="stat"><b id="done">0</b><span>已測試</span></div><div class="stat"><b id="total">0</b><span>總測試</span></div></div>
+<div class="track"><div class="fill" id="fill"></div></div><div class="log" id="log">尚未開始。請先確認正在使用自家 Wi-Fi。</div>
+<div class="row"><button class="secondary" id="copy" disabled>複製全部</button><button class="secondary" id="export" disabled>匯出 TXT</button></div>
+<div class="results" id="results"><span class="hint">成功連線的網址會顯示於此。</span></div>
+</section>
+</div>
+<div class="diagnostic">
+<strong>掃描不到？先做單一網址診斷</strong>
+<p class="small">輸入一個你知道能在 Safari 打開的內網網址（例如家中路由器）。「手動能開，但網頁探測失敗」通常代表瀏覽器限制，而不是服務不存在。</p>
+<label for="known">已知的內網網址</label>
+<input id="known" placeholder="http://192.168.1.1" type="text" autocomplete="off" spellcheck="false">
+<div class="cta"><button class="secondary" id="tryKnown">嘗試探測</button><button class="secondary" id="openKnown">手動開啟</button></div>
+<div class="summary" id="diagResult"></div>
+</div>
+<p class="small" style="margin-top:18px">只掃描你擁有或已獲得許可的私人網路。此網頁無法辨識自訂 DNS 名稱，也無法直接讀取其他網站的內容。想要可靠的 iPhone 網段與 Port 掃描，仍需使用 Fing 等原生 App。</p>
+</main>
+<script>
+(function(){
+"use strict";
+var $=function(x){return document.getElementById(x)};
+var secure={443:1,5001:1,8443:1,9443:1},running=false,cancel=false,controllers=[],found=[],jobs=[],idx=0,done=0,errors=0,times=0;
+function privatePrefix(v){
+ var m=v.trim().match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+ if(!m)throw Error("IP 網段格式錯誤，例如 192.168.1");
+ var a=+m[1],b=+m[2],c=+m[3];if(a>255||b>255||c>255||!(a===10||(a===172&&b>=16&&b<=31)||(a===192&&b===168)))throw Error("僅允許私有 IPv4 網段");
+ return [a,b,c].join(".");
+}
+function getJobs(){
+ var prefix=privatePrefix($("subnet").value),from=+$("from").value,to=+$("to").value;
+ if(!Number.isInteger(from)||!Number.isInteger(to)||from<1||to>254||from>to)throw Error("尾碼範圍應為 1–254");
+ var ports=$("ports").value.split(",").map(function(x){return x.trim()});
+ if(!ports.length||ports.some(function(p){return !/^\d+$/.test(p)||+p<1||+p>65535}))throw Error("Port 格式錯誤");
+ ports=[...new Set(ports.map(Number))];if(ports.length>20)throw Error("最多 20 個 Port");
+ var items=[];for(var p of ports)for(var i=from;i<=to;i++){
+  var s=secure[p]?"https":"http",u=s+"://"+prefix+"."+i+((p===80&&s==="http")||(p===443&&s==="https")?"":":"+p);items.push(u);
+ }
+ return items;
+}
+function draw(){
+ $("found").textContent=found.length;$("done").textContent=done;$("total").textContent=jobs.length;
+ $("fill").style.width=(jobs.length?Math.round(100*done/jobs.length):0)+"%";
+ $("copy").disabled=$("export").disabled=!found.length;
+}
+function note(s){$("log").textContent=s}
+function render(){
+ var box=$("results");box.replaceChildren();if(!found.length){box.textContent="目前沒有可確認的網址。";return}
+ for(var url of found){
+  var row=document.createElement("div"),a=document.createElement("a"),btn=document.createElement("button");
+  row.className="result";a.href=url;a.textContent=url;a.target="_blank";a.rel="noopener noreferrer";
+  btn.textContent="複製";btn.className="secondary small";btn.addEventListener("click",function(u){return function(){copy(u)}}(url));
+  row.append(a,btn);box.append(row);
+ }
+}
+async function probe(url,ms){
+ var c=new AbortController();controllers.push(c),expired=false;
+ var t=setTimeout(function(){expired=true;c.abort()},ms);
+ try{await fetch(url,{method:"GET",mode:"no-cors",credentials:"omit",cache:"no-store",redirect:"follow",referrerPolicy:"no-referrer",signal:c.signal,targetAddressSpace:"local"});return "ok"}
+ catch(e){return expired?"timeout":"fail"}
+ finally{clearTimeout(t);controllers=controllers.filter(function(x){return x!==c})}
+}
+async function worker(){
+ while(!cancel&&idx<jobs.length){
+  var u=jobs[idx++],r=await probe(u,2200);if(cancel)return;
+  done++;if(r==="ok"){found.push(u);render()}else if(r==="timeout")times++;else errors++;
+  if(done%5===0||r==="ok"||done===jobs.length){draw();note("已測試 "+done+"/"+jobs.length+"，目前 "+found.length+" 個有回應。")}
+ }
+}
+async function scan(){
+ if(running)return;try{jobs=getJobs()}catch(e){note(e.message);return}
+ running=true;cancel=false;controllers=[];idx=done=errors=times=0;found=[];
+ $("start").disabled=true;$("stop").disabled=false;$("status").textContent="掃描中";
+ draw();render();note("正在嘗試連線。若每個請求都立刻失敗，可能是 Safari／HTTPS 安全限制。");
+ await Promise.all(Array.from({length:Math.min(10,jobs.length)},worker));
+ running=false;$("start").disabled=false;$("stop").disabled=true;$("status").textContent=cancel?"已停止":"已完成";draw();render();
+ if(cancel)note("已停止，完成 "+done+" 項測試。");
+ else if(!found.length)note("共 "+done+" 項，0 個有回應；立即失敗 "+errors+"、逾時 "+times+"。這可能是瀏覽器攔截，不能推論內網沒有網站。請使用下方單一網址診斷。");
+ else note("已找到 "+found.length+" 個有回應的網址。其他失敗的測試可能是服務未開啟或遭到瀏覽器封鎖。");
+}
+async function copy(str){try{await navigator.clipboard.writeText(str);note("已複製到剪貼簿。")}catch(e){note("無法自動複製，請長按網址複製。")}}
+$("start").addEventListener("click",scan);
+$("stop").addEventListener("click",function(){cancel=true;for(var c of controllers)c.abort();$("status").textContent="停止中"});
+$("copy").addEventListener("click",function(){copy(found.join("\n"))});
+$("export").addEventListener("click",function(){
+ var blob=new Blob([found.join("\n")+"\n"],{type:"text/plain"}),u=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=u;a.download="lan-finder-results.txt";document.body.append(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1000);
+});
+function known(){var v=$("known").value.trim();try{var u=new URL(v);if(!/^https?:$/.test(u.protocol)||!u.hostname.match(/^\d+\.\d+\.\d+\.\d+$/))throw Error();var parts=u.hostname.split(".").map(Number),a=parts[0],b=parts[1];if(parts.some(function(n){return n>255})||!(a===10||(a===172&&b>=16&&b<=31)||(a===192&&b===168)))throw Error();return u.href}catch(e){throw Error("請輸入私人 IP 的完整 http:// 或 https:// 網址")}}
+$("tryKnown").addEventListener("click",async function(){
+ try{var u=known();$("diagResult").textContent="正在測試 "+u;var r=await probe(u,3500);
+ $("diagResult").textContent=r==="ok"?"有回應：這個網址可以透過網頁探測。":"探測失敗（"+r+"）。若手動能開啟，表示這個瀏覽器不能可靠地用程式掃描此內網網址。";
+ }catch(e){$("diagResult").textContent=e.message}
+});
+$("openKnown").addEventListener("click",function(){try{window.open(known(),"_blank","noopener")}catch(e){$("diagResult").textContent=e.message}});
+draw();
+})();
+</script>
+</body>
+</html>
