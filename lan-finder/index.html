@@ -27,9 +27,9 @@ a{color:var(--mint)}.small{font-size:12px}.cta{display:flex;gap:8px;margin-top:1
 </head>
 <body>
 <main>
-<div class="tag">◉ LAN FINDER · LOCAL DISCOVERY</div>
+<div class="tag">◉ LAN FINDER · LOCAL DISCOVERY · V2</div>
 <h1>找回你的內網網站</h1>
-<p>在你的 Wi-Fi 裡測試常見網址，僅列出<strong>瀏覽器確認有回應</strong>的 Web 服務。此頁不使用外部程式庫，也不會把掃描結果上傳。</p>
+<p>在你的 Wi-Fi 裡測試常見網址，僅列出<strong>瀏覽器探測成功</strong>的 Web 服務。此頁不使用外部程式庫，也不會把掃描結果上傳。</p>
 <div class="warning"><strong>iPhone／Safari 限制：</strong>這是實驗性「瀏覽器探測」，不是完整 Port Scanner。GitHub Pages 使用 HTTPS，可能阻擋存取家中 HTTP 服務；HTTPS 憑證錯誤、區域網路權限也會造成漏報。掃描為 0 不代表家裡沒有網站。</div>
 <div class="layout">
 <section class="card">
@@ -44,10 +44,10 @@ a{color:var(--mint)}.small{font-size:12px}.cta{display:flex;gap:8px;margin-top:1
 </section>
 <section class="card">
 <div class="row" style="justify-content:space-between"><h2 style="margin-bottom:8px">有回應的網址</h2><span class="badge" id="status">未開始</span></div>
-<div class="statgrid"><div class="stat"><b id="found">0</b><span>有回應</span></div><div class="stat"><b id="done">0</b><span>已測試</span></div><div class="stat"><b id="total">0</b><span>總測試</span></div></div>
-<div class="track"><div class="fill" id="fill"></div></div><div class="log" id="log">尚未開始。請先確認正在使用自家 Wi-Fi。</div>
+<div class="statgrid"><div class="stat"><b id="found">0</b><span>有回應</span></div><div class="stat"><b id="done">0</b><span>已完成</span></div><div class="stat"><b id="total">0</b><span>總測試</span></div><div class="stat"><b id="inflight">0</b><span>進行中</span></div><div class="stat"><b id="failed">0</b><span>連線失敗</span></div><div class="stat"><b id="timeouts">0</b><span>逾時</span></div></div><div class="summary" id="elapsed">已耗時 0 秒 · 尚未開始</div>
+<div class="track"><div class="fill" id="fill"></div></div><div class="log" id="log" role="status" aria-live="polite">尚未開始。請先確認正在使用自家 Wi-Fi。</div><div class="diagnostic" style="padding:11px;margin:10px 0"><strong class="small">連線診斷</strong><div class="small" id="warning" style="color:#f7d9a5;margin-top:4px">尚無診斷資料。</div><div class="small" id="last" style="color:var(--muted);margin-top:7px;overflow-wrap:anywhere">最近結果：—</div></div>
 <div class="row"><button class="secondary" id="copy" disabled>複製全部</button><button class="secondary" id="export" disabled>匯出 TXT</button></div>
-<div class="results" id="results"><span class="hint">成功連線的網址會顯示於此。</span></div>
+<div class="results" id="results"><span class="hint">尚未開始掃描；找到的網址會列在此處。</span></div>
 </section>
 </div>
 <div class="diagnostic">
@@ -63,80 +63,166 @@ a{color:var(--mint)}.small{font-size:12px}.cta{display:flex;gap:8px;margin-top:1
 <script>
 (function(){
 "use strict";
-var $=function(x){return document.getElementById(x)};
-var secure={443:1,5001:1,8443:1,9443:1},running=false,cancel=false,controllers=[],found=[],jobs=[],idx=0,done=0,errors=0,times=0;
+const $ = id => document.getElementById(id);
+const secure = new Set([443,5001,8443,9443]);
+const MAX_CONCURRENCY = 24, TIMEOUT_MS = 1500;
+let state = null, controllers = new Set(), knownControllers = new Set(), renderClock = null;
 function privatePrefix(v){
- var m=v.trim().match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+ const m=v.trim().match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
  if(!m)throw Error("IP 網段格式錯誤，例如 192.168.1");
- var a=+m[1],b=+m[2],c=+m[3];if(a>255||b>255||c>255||!(a===10||(a===172&&b>=16&&b<=31)||(a===192&&b===168)))throw Error("僅允許私有 IPv4 網段");
+ const [a,b,c]=m.slice(1).map(Number);
+ if(a>255||b>255||c>255||!(a===10||(a===172&&b>=16&&b<=31)||(a===192&&b===168)))throw Error("僅允許私有 IPv4 網段");
  return [a,b,c].join(".");
 }
 function getJobs(){
- var prefix=privatePrefix($("subnet").value),from=+$("from").value,to=+$("to").value;
+ const prefix=privatePrefix($("subnet").value),from=Number($("from").value),to=Number($("to").value);
  if(!Number.isInteger(from)||!Number.isInteger(to)||from<1||to>254||from>to)throw Error("尾碼範圍應為 1–254");
- var ports=$("ports").value.split(",").map(function(x){return x.trim()});
- if(!ports.length||ports.some(function(p){return !/^\d+$/.test(p)||+p<1||+p>65535}))throw Error("Port 格式錯誤");
- ports=[...new Set(ports.map(Number))];if(ports.length>20)throw Error("最多 20 個 Port");
- var items=[];for(var p of ports)for(var i=from;i<=to;i++){
-  var s=secure[p]?"https":"http",u=s+"://"+prefix+"."+i+((p===80&&s==="http")||(p===443&&s==="https")?"":":"+p);items.push(u);
+ const raw=$("ports").value.split(",").map(x=>x.trim());
+ if(!raw.length||raw.some(p=>!/^\d+$/.test(p)||+p<1||+p>65535))throw Error("Port 格式錯誤");
+ const ports=[...new Set(raw.map(Number))];
+ if(ports.length>20)throw Error("最多 20 個 Port");
+ const jobs=[];
+ // Common HTTP/S endpoints first, so useful results can appear sooner.
+ const ordered=[...ports].sort((a,b)=>(a===80?-20:a===443?-19:0)-(b===80?-20:b===443?-19:0));
+ for(const p of ordered)for(let ip=from;ip<=to;ip++){
+  const s=secure.has(p)?"https":"http";
+  jobs.push(s+"://"+prefix+"."+ip+((p===80&&s==="http")||(p===443&&s==="https")?"":":"+p));
  }
- return items;
+ return jobs;
 }
+function elapsed(s){return s?Math.floor((Date.now()-s)/1000):0}
 function draw(){
- $("found").textContent=found.length;$("done").textContent=done;$("total").textContent=jobs.length;
- $("fill").style.width=(jobs.length?Math.round(100*done/jobs.length):0)+"%";
- $("copy").disabled=$("export").disabled=!found.length;
+ const s=state;
+ $("found").textContent=s?s.found.length:0;
+ $("done").textContent=s?s.done:0;
+ $("total").textContent=s?s.jobs.length:0;
+ $("inflight").textContent=s?s.active:0;
+ $("failed").textContent=s?s.failed:0;
+ $("timeouts").textContent=s?s.timeouts:0;
+ $("fill").style.width=(s&&s.jobs.length?Math.round(100*s.done/s.jobs.length):0)+"%";
+ $("elapsed").textContent=s?"已耗時 "+elapsed(s.started)+" 秒 · "+(s.running?"掃描中":"已結束"):"已耗時 0 秒 · 尚未開始";
+ $("copy").disabled=$("export").disabled=!s||!s.found.length;
 }
-function note(s){$("log").textContent=s}
+function note(str){$("log").textContent=str}
 function render(){
- var box=$("results");box.replaceChildren();if(!found.length){box.textContent="目前沒有可確認的網址。";return}
- for(var url of found){
-  var row=document.createElement("div"),a=document.createElement("a"),btn=document.createElement("button");
+ const box=$("results");box.replaceChildren();
+ if(!state||!state.found.length){
+  box.textContent=!state?"尚未開始掃描。":state.running?"尚未找到已確認的網址；仍在測試中。":"本次測試未確認任何網址（不代表不存在）。";return;
+ }
+ for(const url of state.found){
+  const row=document.createElement("div"),a=document.createElement("a"),btn=document.createElement("button");
   row.className="result";a.href=url;a.textContent=url;a.target="_blank";a.rel="noopener noreferrer";
-  btn.textContent="複製";btn.className="secondary small";btn.addEventListener("click",function(u){return function(){copy(u)}}(url));
+  btn.textContent="複製";btn.className="secondary small";btn.addEventListener("click",()=>copy(url));
   row.append(a,btn);box.append(row);
  }
 }
-async function probe(url,ms){
- var c=new AbortController();controllers.push(c),expired=false;
- var t=setTimeout(function(){expired=true;c.abort()},ms);
- try{await fetch(url,{method:"GET",mode:"no-cors",credentials:"omit",cache:"no-store",redirect:"follow",referrerPolicy:"no-referrer",signal:c.signal,targetAddressSpace:"local"});return "ok"}
- catch(e){return expired?"timeout":"fail"}
- finally{clearTimeout(t);controllers=controllers.filter(function(x){return x!==c})}
+function report(s,final=false){
+ if(!s)return;
+ draw();
+ $("last").textContent=s.last?"最近結果："+s.last:"最近結果：等待第一批連線完成…";
+ const fullHTTPS=location.protocol==="https:";
+ let caution="";
+ if(s.done===0 && s.active>0)caution="已有 "+s.active+" 個請求送出，尚未完成第一批測試；0 個已測試不代表失敗。";
+ else if(s.done>=12 && s.found.length===0 && s.failed===s.done && s.fastFail>=Math.ceil(s.done*.85))
+  caution="大量請求在 250 毫秒內立即失敗，可能是瀏覽器安全限制、網段錯誤或網路拒絕連線；無法單憑此現象確定原因。";
+ else if(s.done>=12 && s.found.length===0 && s.timeouts>=Math.ceil(s.done*.85))
+  caution="大多數請求逾時，可能是設備沒有回應、連線被防火牆丟棄，或瀏覽器限制。";
+ else if(s.found.length)caution="已成功探測 "+s.found.length+" 個網址；其餘連線失敗不等於服務不存在。";
+ else caution="目前尚未取得成功回應，仍在測試。";
+ if(fullHTTPS)caution+=" 注意：此頁使用 HTTPS，對 HTTP 私有 IP 的程式化存取可能被封鎖。";
+ $("warning").textContent=caution;
+ if(!final)note("已完成 "+s.done+"/"+s.jobs.length+"；進行中 "+s.active+"；成功 "+s.found.length+"；失敗 "+s.failed+"；逾時 "+s.timeouts+"。");
 }
-async function worker(){
- while(!cancel&&idx<jobs.length){
-  var u=jobs[idx++],r=await probe(u,2200);if(cancel)return;
-  done++;if(r==="ok"){found.push(u);render()}else if(r==="timeout")times++;else errors++;
-  if(done%5===0||r==="ok"||done===jobs.length){draw();note("已測試 "+done+"/"+jobs.length+"，目前 "+found.length+" 個有回應。")}
+async function probe(url,ms,controlSet){
+ const ctl=new AbortController();controlSet.add(ctl);
+ const start=performance.now();let expired=false;
+ const timer=setTimeout(()=>{expired=true;ctl.abort()},ms);
+ try{
+  await fetch(url,{method:"GET",mode:"no-cors",credentials:"omit",cache:"no-store",redirect:"follow",referrerPolicy:"no-referrer",signal:ctl.signal,targetAddressSpace:"local"});
+  return {kind:"ok",duration:Math.round(performance.now()-start),detail:"已收到網路回應（無法讀取 HTTP 狀態碼）"};
+ }catch(e){
+  const duration=Math.round(performance.now()-start);
+  if(expired)return {kind:"timeout",duration,detail:"逾時"};
+  if(ctl.signal.aborted)return {kind:"canceled",duration,detail:"已取消"};
+  const label=e&&e.name?String(e.name).slice(0,35):"NetworkError";
+  return {kind:"fail",duration,detail:label+"：無法判斷是瀏覽器限制、設備不存在或拒絕連線"};
+ }finally{clearTimeout(timer);controlSet.delete(ctl)}
+}
+async function worker(s){
+ while(!s.cancel && s.next<s.jobs.length){
+  const url=s.jobs[s.next++];s.active++;
+  const r=await probe(url,TIMEOUT_MS,controllers);
+  s.active--;
+  if(s.cancel)break;
+  s.done++;
+  if(r.kind==="ok"){s.found.push(url);render()}
+  else if(r.kind==="timeout")s.timeouts++;
+  else if(r.kind==="fail"){s.failed++;if(r.duration<250)s.fastFail++}
+  s.last=r.kind==="ok"?"成功":r.kind==="timeout"?"逾時":r.kind==="fail"?"無法連線":"已取消";
+  s.last+=" · "+url+" · "+r.duration+" ms · "+r.detail;
+  if(s.done%3===0 || r.kind==="ok" || s.done===s.jobs.length)report(s);
  }
 }
 async function scan(){
- if(running)return;try{jobs=getJobs()}catch(e){note(e.message);return}
- running=true;cancel=false;controllers=[];idx=done=errors=times=0;found=[];
+ if(state&&state.running)return;
+ let jobs;try{jobs=getJobs()}catch(e){note(e.message);return}
+ controllers=new Set();
+ const s={jobs,next:0,done:0,active:0,failed:0,fastFail:0,timeouts:0,found:[],last:"",started:Date.now(),running:true,cancel:false};
+ state=s;
  $("start").disabled=true;$("stop").disabled=false;$("status").textContent="掃描中";
- draw();render();note("正在嘗試連線。若每個請求都立刻失敗，可能是 Safari／HTTPS 安全限制。");
- await Promise.all(Array.from({length:Math.min(10,jobs.length)},worker));
- running=false;$("start").disabled=false;$("stop").disabled=true;$("status").textContent=cancel?"已停止":"已完成";draw();render();
- if(cancel)note("已停止，完成 "+done+" 項測試。");
- else if(!found.length)note("共 "+done+" 項，0 個有回應；立即失敗 "+errors+"、逾時 "+times+"。這可能是瀏覽器攔截，不能推論內網沒有網站。請使用下方單一網址診斷。");
- else note("已找到 "+found.length+" 個有回應的網址。其他失敗的測試可能是服務未開啟或遭到瀏覽器封鎖。");
+ render();report(s);
+ renderClock=setInterval(()=>{if(state===s&&s.running)report(s)},350);
+ try{await Promise.all(Array.from({length:Math.min(MAX_CONCURRENCY,jobs.length)},()=>worker(s)))}
+ finally{
+  clearInterval(renderClock);renderClock=null;
+  s.running=false;
+  $("start").disabled=false;$("stop").disabled=true;
+  $("status").textContent=s.cancel?"已停止":"已完成";
+  report(s,true);render();
+  if(s.cancel)note("掃描已停止。完成 "+s.done+"/"+s.jobs.length+"；成功 "+s.found.length+"。");
+  else if(s.found.length)note("掃描完成：找到 "+s.found.length+" 個有網路回應的網址。無法確定其他網址是否真的不存在。");
+  else note("掃描完成：0 個可確認的網址。失敗 "+s.failed+"、逾時 "+s.timeouts+"；請看下方診斷，這不代表家中沒有網站。");
+ }
 }
-async function copy(str){try{await navigator.clipboard.writeText(str);note("已複製到剪貼簿。")}catch(e){note("無法自動複製，請長按網址複製。")}}
+async function copy(str){
+ try{await navigator.clipboard.writeText(str);note("已複製到剪貼簿。")}
+ catch(e){note("無法自動複製，請長按網址複製。")}
+}
 $("start").addEventListener("click",scan);
-$("stop").addEventListener("click",function(){cancel=true;for(var c of controllers)c.abort();$("status").textContent="停止中"});
-$("copy").addEventListener("click",function(){copy(found.join("\n"))});
-$("export").addEventListener("click",function(){
- var blob=new Blob([found.join("\n")+"\n"],{type:"text/plain"}),u=URL.createObjectURL(blob),a=document.createElement("a");
- a.href=u;a.download="lan-finder-results.txt";document.body.append(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1000);
+$("stop").addEventListener("click",()=>{
+ if(!state||!state.running)return;
+ state.cancel=true;$("status").textContent="停止中";
+ for(const ctl of controllers)ctl.abort();
 });
-function known(){var v=$("known").value.trim();try{var u=new URL(v);if(!/^https?:$/.test(u.protocol)||!u.hostname.match(/^\d+\.\d+\.\d+\.\d+$/))throw Error();var parts=u.hostname.split(".").map(Number),a=parts[0],b=parts[1];if(parts.some(function(n){return n>255})||!(a===10||(a===172&&b>=16&&b<=31)||(a===192&&b===168)))throw Error();return u.href}catch(e){throw Error("請輸入私人 IP 的完整 http:// 或 https:// 網址")}}
-$("tryKnown").addEventListener("click",async function(){
- try{var u=known();$("diagResult").textContent="正在測試 "+u;var r=await probe(u,3500);
- $("diagResult").textContent=r==="ok"?"有回應：這個網址可以透過網頁探測。":"探測失敗（"+r+"）。若手動能開啟，表示這個瀏覽器不能可靠地用程式掃描此內網網址。";
+$("copy").addEventListener("click",()=>copy(state?state.found.join("\n"):""));
+$("export").addEventListener("click",()=>{
+ if(!state||!state.found.length)return;
+ const blob=new Blob([state.found.join("\n")+"\n"],{type:"text/plain"}),u=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=u;a.download="lan-finder-results.txt";document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(u),1000);
+});
+function known(){
+ const v=$("known").value.trim();
+ try{
+  const u=new URL(v);
+  if(!/^https?:$/.test(u.protocol)||!/^\d+\.\d+\.\d+\.\d+$/.test(u.hostname)||u.username||u.password)throw Error();
+  const [a,b,c,d]=u.hostname.split(".").map(Number);
+  if([a,b,c,d].some(n=>n>255)||!(a===10||(a===172&&b>=16&&b<=31)||(a===192&&b===168)))throw Error();
+  return u.href;
+ }catch(e){throw Error("請輸入私人 IP 的完整 http:// 或 https:// 網址")}
+}
+$("tryKnown").addEventListener("click",async()=>{
+ try{
+  const url=known();$("diagResult").textContent="正在測試 "+url+"（最多等待 3.5 秒）";
+  const r=await probe(url,3500,knownControllers);
+  $("diagResult").textContent=r.kind==="ok"
+    ?"探測成功 · "+r.duration+" ms · "+r.detail
+    :"程式化探測未成功 · "+r.duration+" ms · "+r.detail+"。請再按「手動開啟」。若 Safari 手動可開啟但此處失敗，就表示瀏覽器的程式化探測不可靠。";
  }catch(e){$("diagResult").textContent=e.message}
 });
-$("openKnown").addEventListener("click",function(){try{window.open(known(),"_blank","noopener")}catch(e){$("diagResult").textContent=e.message}});
+$("openKnown").addEventListener("click",()=>{
+ try{window.open(known(),"_blank","noopener")}catch(e){$("diagResult").textContent=e.message}
+});
 draw();
 })();
 </script>
