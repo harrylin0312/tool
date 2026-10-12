@@ -89,7 +89,7 @@ async function checkForUpdates(){
   const response=await fetch("./version.json?check="+Date.now(),{cache:"no-store",signal:controller.signal});
   if(!response.ok)throw Error("HTTP "+response.status);
   const manifest=await response.json();
-  if(!manifest||!/^\\d+\\.\\d+\\.\\d+$/.test(manifest.version))throw Error("版本資訊格式錯誤");
+  if(!manifest||!/^\d+\.\d+\.\d+$/.test(manifest.version))throw Error("版本資訊格式錯誤");
   if(manifest.version===BUILD_VERSION){
    newerVersion="";
    $("reloadUpdate").hidden=true;
