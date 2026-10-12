@@ -36,7 +36,7 @@ a{color:var(--mint)}.small{font-size:12px}.cta{display:flex;gap:8px;margin-top:1
 <main>
 <div class="buildline">
   <div class="tag">◉ LAN FINDER · HTTP DIAGNOSTICS</div>
-  <div class="versionchip">版本 <strong id="currentVersion">v2.4.0</strong> · 2026-10-12</div>
+  <div class="versionchip">版本 <strong id="currentVersion">v2.5.0</strong> · 2026-10-12</div>
   <button class="checkbuild" id="checkUpdate" type="button">檢查更新</button>
 </div>
 <div class="buildstatus" id="buildStatus" role="status" aria-live="polite">此處顯示目前載入的版本；離線時仍可辨識。</div>
@@ -71,6 +71,11 @@ a{color:var(--mint)}.small{font-size:12px}.cta{display:flex;gap:8px;margin-top:1
 </ol>
 <div class="small" style="color:#f7d9a5">這不是硬體識別：只靠頁面線索，可能無法辨識品牌、型號或真實用途。無法讀取其他 IP 的跨來源頁面內容，也不會嘗試登入。</div>
 <textarea id="identifierManual" readonly rows="2" spellcheck="false" style="display:none;width:100%;color:#eaf2ff;background:#0b1525;border:1px solid #465a73;border-radius:8px;padding:8px;margin-top:9px;font-size:11px"></textarea>
+</div>
+<div class="diagnostic" style="margin:18px 0;border-color:#378f7f">
+<strong>NEW · Password Lab｜離線密碼字典風險測試</strong>
+<p class="small">內建 SecLists 9,999 筆常見密碼，支援不輸入資料直接示範、或一次比較多組自訂密碼；可以調整假設猜測速度。這是本機離線模擬，不會登入或攻擊任何路由器，也不會儲存密碼。</p>
+<div class="row"><a class="secondary" href="./password-audit.html" style="display:inline-block;text-decoration:none;padding:10px 14px;border-radius:10px;font-weight:700">開啟密碼風險模擬器 →</a></div>
 </div>
 <div class="layout">
 <section class="card">
@@ -133,7 +138,7 @@ $("copyBookmarklet").addEventListener("click",async()=>{
   }catch(_){msg.textContent="請長按下方文字、全選複製，並貼到 Safari 書籤的網址。";}
  }
 });
-const BUILD_VERSION = "2.4.0";
+const BUILD_VERSION = "2.5.0";
 let newerVersion = "";
 async function checkForUpdates(){
  const button=$("checkUpdate");
