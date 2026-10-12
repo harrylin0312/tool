@@ -9,7 +9,14 @@
 :root{color-scheme:dark;--bg:#090f1b;--panel:#142034;--edge:#30415a;--muted:#9db0c9;--light:#f2f7ff;--mint:#78f0cd}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 95% 0,#244763 0,transparent 42%),var(--bg);font:15px/1.55 system-ui,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--light)}
 main{max-width:860px;margin:auto;padding:32px 17px 65px}.tag{font-size:12px;letter-spacing:.15em;font-weight:800;color:var(--mint)}
-h1{font-size:clamp(30px,6vw,44px);letter-spacing:-.04em;margin:12px 0 5px}p{color:var(--muted);margin:8px 0 17px}.layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+h1{font-size:clamp(30px,6vw,44px);letter-spacing:-.04em;margin:12px 0 5px}
+.buildline{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:5px}
+.versionchip{font-size:12px;color:#f2f7ff;padding:5px 10px;border:1px solid #4ca692;border-radius:8px;background:#173b37}
+.versionchip strong{color:#78f0cd}
+.checkbuild,.reloadbuild{font-size:12px;border:1px solid #546a82;background:#1b2c42;color:#eaf2ff;padding:5px 10px;border-radius:8px}
+.buildstatus{font-size:12px;color:#9db0c9;min-height:19px}
+.reloadbuild{margin-top:5px;color:#06241e;background:#78f0cd;border:0}
+[hidden]{display:none!important}p{color:var(--muted);margin:8px 0 17px}.layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .card{background:#142034e9;border:1px solid var(--edge);border-radius:17px;padding:20px;min-width:0}h2{font-size:17px;margin:0 0 16px}
 label{display:block;font-size:12px;font-weight:700;margin:12px 0 6px}input{font:inherit;width:100%;color:var(--light);background:#0b1525;border:1px solid #465a73;border-radius:10px;padding:11px;min-width:0}
 input:focus{outline:2px solid #78f0cd80}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{font:inherit;border-radius:10px;cursor:pointer;padding:10px 12px;font-weight:700}
@@ -27,7 +34,13 @@ a{color:var(--mint)}.small{font-size:12px}.cta{display:flex;gap:8px;margin-top:1
 </head>
 <body>
 <main>
-<div class="tag">◉ LAN FINDER · LOCAL DISCOVERY · V2</div>
+<div class="buildline">
+  <div class="tag">◉ LAN FINDER · LOCAL DISCOVERY</div>
+  <div class="versionchip">版本 <strong id="currentVersion">v2.1.0</strong> · 2026-10-12</div>
+  <button class="checkbuild" id="checkUpdate" type="button">檢查更新</button>
+</div>
+<div class="buildstatus" id="buildStatus" role="status" aria-live="polite">此處顯示目前載入的版本；離線時仍可辨識。</div>
+<button class="reloadbuild" id="reloadUpdate" type="button" hidden>重新載入最新版</button>
 <h1>找回你的內網網站</h1>
 <p>在你的 Wi-Fi 裡測試常見網址，僅列出<strong>瀏覽器探測成功</strong>的 Web 服務。此頁不使用外部程式庫，也不會把掃描結果上傳。</p>
 <div class="warning"><strong>iPhone／Safari 限制：</strong>這是實驗性「瀏覽器探測」，不是完整 Port Scanner。GitHub Pages 使用 HTTPS，可能阻擋存取家中 HTTP 服務；HTTPS 憑證錯誤、區域網路權限也會造成漏報。掃描為 0 不代表家裡沒有網站。</div>
@@ -64,6 +77,43 @@ a{color:var(--mint)}.small{font-size:12px}.cta{display:flex;gap:8px;margin-top:1
 (function(){
 "use strict";
 const $ = id => document.getElementById(id);
+const BUILD_VERSION = "2.1.0";
+let newerVersion = "";
+async function checkForUpdates(){
+ const button=$("checkUpdate");
+ button.disabled=true;
+ $("buildStatus").textContent="正在檢查 GitHub 上的最新版本…";
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),6000);
+ try{
+  const response=await fetch("./version.json?check="+Date.now(),{cache:"no-store",signal:controller.signal});
+  if(!response.ok)throw Error("HTTP "+response.status);
+  const manifest=await response.json();
+  if(!manifest||!/^\\d+\\.\\d+\\.\\d+$/.test(manifest.version))throw Error("版本資訊格式錯誤");
+  if(manifest.version===BUILD_VERSION){
+   newerVersion="";
+   $("reloadUpdate").hidden=true;
+   $("buildStatus").textContent="已是最新版本 v"+BUILD_VERSION+"。";
+  }else{
+   newerVersion=manifest.version;
+   $("buildStatus").textContent="線上版本為 v"+newerVersion+"；目前載入 v"+BUILD_VERSION+"。";
+   $("reloadUpdate").hidden=false;
+  }
+ }catch(e){
+  $("buildStatus").textContent="無法連線檢查更新（可能只有內網）。目前頁面版本：v"+BUILD_VERSION+"。";
+ }finally{clearTimeout(timer);button.disabled=false}
+}
+$("checkUpdate").addEventListener("click",checkForUpdates);
+$("reloadUpdate").addEventListener("click",()=>{
+ const url=new URL(location.href);
+ url.searchParams.set("v",newerVersion||BUILD_VERSION);
+ url.searchParams.set("reload",String(Date.now()));
+ location.assign(url.href);
+});
+if("serviceWorker" in navigator){
+ navigator.serviceWorker.register("./sw.js").catch(()=>{ /* Offline support may be disabled in private browsing. */ });
+}
+if(navigator.onLine){checkForUpdates();}
 const secure = new Set([443,5001,8443,9443]);
 const MAX_CONCURRENCY = 24, TIMEOUT_MS = 1500;
 let state = null, controllers = new Set(), knownControllers = new Set(), renderClock = null;
