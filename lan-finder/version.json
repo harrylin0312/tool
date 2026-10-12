@@ -1,5 +1,5 @@
 {
-  "version": "2.4.0",
+  "version": "2.5.0",
   "released": "2026-10-12",
-  "notes": "新增獨立的 Safari 設備類型辨識書籤，保留原本 v2.3.0 掃描器"
+  "notes": "新增離線 Password Lab：內建 9999 筆 SecLists 密碼字典、自訂多組比對、猜測速度模擬與防護觀察表"
 }
