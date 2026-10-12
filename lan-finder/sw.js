@@ -1,5 +1,5 @@
-/* LAN Finder offline shell - v2.1.0 */
-const CACHE_NAME = "lan-finder-shell-v2.1.0";
+/* LAN Finder offline shell - v2.2.0 */
+const CACHE_NAME = "lan-finder-shell-v2.2.0";
 const PAGE_URL = new URL("./index.html", self.registration.scope).href;
 const SCOPE_PATH = new URL(self.registration.scope).pathname;
 
