@@ -1,5 +1,5 @@
 {
-  "version": "2.2.0",
+  "version": "2.3.0",
   "released": "2026-10-12",
-  "notes": "Safari 內網模式與校正測試"
+  "notes": "修正 Safari 書籤程式的 URL 編碼、縮短程式並加入啟動提示及埠 80 校正探測"
 }
