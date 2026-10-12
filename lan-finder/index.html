@@ -36,7 +36,7 @@ a{color:var(--mint)}.small{font-size:12px}.cta{display:flex;gap:8px;margin-top:1
 <main>
 <div class="buildline">
   <div class="tag">◉ LAN FINDER · HTTP DIAGNOSTICS</div>
-  <div class="versionchip">版本 <strong id="currentVersion">v2.3.0</strong> · 2026-10-12</div>
+  <div class="versionchip">版本 <strong id="currentVersion">v2.4.0</strong> · 2026-10-12</div>
   <button class="checkbuild" id="checkUpdate" type="button">檢查更新</button>
 </div>
 <div class="buildstatus" id="buildStatus" role="status" aria-live="polite">此處顯示目前載入的版本；離線時仍可辨識。</div>
@@ -57,6 +57,20 @@ a{color:var(--mint)}.small{font-size:12px}.cta{display:flex;gap:8px;margin-top:1
 </ol>
 <div class="small" style="color:#f7d9a5">這是實驗性探測：若原站 CSP 限制書籤腳本，或 Safari 仍阻擋跨 IP 請求，可能無法掃描；失敗不能視為 Port 關閉。</div>
 <textarea id="bookmarkletManual" readonly rows="2" spellcheck="false" style="display:none;width:100%;color:#eaf2ff;background:#0b1525;border:1px solid #465a73;border-radius:8px;padding:8px;margin-top:9px;font-size:11px"></textarea>
+</div>
+<div class="diagnostic localintro" id="deviceIdentifier" style="margin:18px 0;border-color:#36749a">
+<strong>新增｜設備類型辨識（v0.1）</strong>
+<p class="small">先手動開啟掃描結果中的登入／管理網頁，再執行另一個「辨識書籤」。它只讀取目前頁面的標題、網頁標記、部分主標題與 Logo 的文字，不會讀取密碼或送出資料。可推測 TP-Link、ASUS、Synology 等常見設備，無證據一律顯示未知。</p>
+<div class="row"><button type="button" class="primary" id="copyIdentifier">② 複製設備辨識書籤</button></div>
+<div class="small" id="identifierFeedback" style="color:#a9e6d1;margin:8px 0" role="status" aria-live="polite">與 LAN Finder 掃描書籤是兩個獨立工具；原本成功的 v2.3.0 掃描書籤不必替換。</div>
+<ol class="small" style="color:#d9e8f5;padding-left:21px">
+<li>在 Safari 新增另一個書籤，名稱建議為「LAN Identifier」。</li>
+<li>編輯該書籤的網址，貼上剛複製、以 <code>javascript:</code> 開頭的內容。</li>
+<li>開啟你有權存取的內網設備頁面，例如你已確認的 TP-Link 登入介面，再從書籤選單啟動辨識。</li>
+<li>查看品牌、分類與辨識依據；若判斷錯誤可手動調整，按「Copy record」取得 JSON 紀錄。</li>
+</ol>
+<div class="small" style="color:#f7d9a5">這不是硬體識別：只靠頁面線索，可能無法辨識品牌、型號或真實用途。無法讀取其他 IP 的跨來源頁面內容，也不會嘗試登入。</div>
+<textarea id="identifierManual" readonly rows="2" spellcheck="false" style="display:none;width:100%;color:#eaf2ff;background:#0b1525;border:1px solid #465a73;border-radius:8px;padding:8px;margin-top:9px;font-size:11px"></textarea>
 </div>
 <div class="layout">
 <section class="card">
@@ -91,6 +105,19 @@ a{color:var(--mint)}.small{font-size:12px}.cta{display:flex;gap:8px;margin-top:1
 (function(){
 "use strict";
 const $ = id => document.getElementById(id);
+const DEVICE_IDENTIFIER_BOOKMARKLET="javascript:(function()%7Btry%7Bvar%20d%3Ddocument%2Ch%3Dlocation.hostname%2Cm%3Dh.match(%2F%5E(10%7C192%7C172)%5C.(%5Cd%2B)%5C.(%5Cd%2B)%5C.(%5Cd%2B)%24%2F)%3Bif(!m%7C%7C(%2Bm%5B1%5D%3D%3D%3D192%26%26%2Bm%5B2%5D!%3D%3D168)%7C%7C(%2Bm%5B1%5D%3D%3D%3D172%26%26(%2Bm%5B2%5D%3C16%7C%7C%2Bm%5B2%5D%3E31)))%7Balert(%22Open%20a%20private-IP%20device%20webpage%20first%22)%3Breturn%3B%7Dvar%20old%3Dd.getElementById(%22lfid%22)%3Bif(old)%7Bold.remove()%3Breturn%3B%7Dvar%20t%3D(d.title%7C%7C%22%22).slice(0%2C100)%2Cg%3Dd.querySelector('meta%5Bname%3D%22generator%22%5D')%2Ca%3Dd.querySelector('meta%5Bname%3D%22application-name%22%5D')%2Cf%3D%5B%5B%22title%22%2Ct%5D%2C%5B%22generator%22%2Cg%3Fg.content%3A%22%22%5D%2C%5B%22application%22%2Ca%3Fa.content%3A%22%22%5D%2C%5B%22heading%22%2CArray.from(d.querySelectorAll(%22h1%2Ch2%22)).slice(0%2C4).map(x%3D%3Ex.textContent.slice(0%2C70)).join(%22%20%22)%5D%2C%5B%22logo%22%2CArray.from(d.querySelectorAll(%22img%5Balt%5D%22)).slice(0%2C5).map(x%3D%3Ex.alt).join(%22%20%22)%5D%5D%3Bvar%20b%3D%5B%5B%22TP-Link%22%2C%22Network%22%2C%2Ftp%5B-%20%5D%3Flink%7Comada%7Cmercusys%2Fi%5D%2C%5B%22ASUS%22%2C%22Network%22%2C%2Fasuswrt%7C%5Cbasus%5Cb%2Fi%5D%2C%5B%22D-Link%22%2C%22Network%22%2C%2Fd%5B-%20%5D%3Flink%2Fi%5D%2C%5B%22NETGEAR%22%2C%22Network%22%2C%2Fnetgear%2Fi%5D%2C%5B%22MikroTik%22%2C%22Network%22%2C%2Fmikrotik%7Crouteros%2Fi%5D%2C%5B%22Ubiquiti%22%2C%22Network%22%2C%2Fubiquiti%7Cunifi%2Fi%5D%2C%5B%22OpenWrt%22%2C%22Router%20OS%22%2C%2Fopenwrt%7Cluci%2Fi%5D%2C%5B%22Synology%22%2C%22NAS%22%2C%2Fsynology%7Cdiskstation%2Fi%5D%2C%5B%22QNAP%22%2C%22NAS%22%2C%2Fqnap%7Cqts%2Fi%5D%2C%5B%22Proxmox%22%2C%22Virtualization%22%2C%2Fproxmox%2Fi%5D%2C%5B%22Home%20Assistant%22%2C%22Smart%20home%22%2C%2Fhome%20assistant%2Fi%5D%2C%5B%22Hikvision%22%2C%22Camera%22%2C%2Fhikvision%2Fi%5D%2C%5B%22Dahua%22%2C%22Camera%22%2C%2Fdahua%2Fi%5D%5D%3Bvar%20brand%3D%22Unknown%22%2Ckind%3D%22Unknown%22%2Csource%3D%22None%22%3Bouter%3Afor(var%20v%20of%20f)%7Bfor(var%20e%20of%20b)if(e%5B2%5D.test(v%5B1%5D))%7Bbrand%3De%5B0%5D%3Bkind%3De%5B1%5D%3Bsource%3Dv%5B0%5D%3Bbreak%20outer%3B%7D%7Dif(kind%3D%3D%3D%22Unknown%22%26%26%2Flogin%7Csign%20in%2Fi.test(t))kind%3D%22Login%20page%22%3Bvar%20z%3Dd.createElement(%22section%22)%3Bz.id%3D%22lfid%22%3Bz.style.cssText%3D%22position%3Afixed!important%3Binset%3A0!important%3Bz-index%3A2147483647!important%3Bbackground%3A%23091221!important%3Bcolor%3A%23fff!important%3Bpadding%3A18px!important%3Boverflow%3Aauto!important%3Bfont%3A15px%20system-ui!important%22%3Bz.innerHTML%3D'%3Ch2%3ELAN%20Identifier%20v0.1%3C%2Fh2%3E%3Cp%20id%3D%22liout%22%3E%3C%2Fp%3E%3Clabel%3ECorrect%20type%3A%20%3Cselect%20id%3D%22litype%22%3E%3Coption%3EUnknown%3C%2Foption%3E%3Coption%3ENetwork%3C%2Foption%3E%3Coption%3ERouter%20OS%3C%2Foption%3E%3Coption%3ENAS%3C%2Foption%3E%3Coption%3ECamera%3C%2Foption%3E%3Coption%3ESmart%20home%3C%2Foption%3E%3Coption%3EVirtualization%3C%2Foption%3E%3Coption%3ELogin%20page%3C%2Foption%3E%3Coption%3EWeb%20service%3C%2Foption%3E%3C%2Fselect%3E%3C%2Flabel%3E%3Cp%3E%3Cbutton%20id%3D%22licopy%22%3ECopy%20record%3C%2Fbutton%3E%20%3Cbutton%20id%3D%22liclose%22%3EClose%3C%2Fbutton%3E%3C%2Fp%3E%3Ctextarea%20id%3D%22litext%22%20readonly%20rows%3D%224%22%20style%3D%22width%3A95%25%22%3E%3C%2Ftextarea%3E%3Cp%20id%3D%22limsg%22%3EPage%20title%20and%20visible%20metadata%20only.%20No%20data%20sent.%3C%2Fp%3E'%3B(d.body%7C%7Cd.documentElement).appendChild(z)%3Bvar%20q%3Did%3D%3Ez.querySelector(%22%23%22%2Bid)%2Csel%3Dq(%22litype%22)%3Bsel.value%3Dkind%3Bq(%22liout%22).textContent%3D%22IP%3A%20%22%2Bh%2B%22%20%7C%20Brand%3A%20%22%2Bbrand%2B%22%20%7C%20Type%3A%20%22%2Bkind%2B%22%20%7C%20Evidence%3A%20%22%2Bsource%2B%22%20%7C%20Page%3A%20%22%2B(t%7C%7C%22none%22)%3Bfunction%20record()%7Bq(%22litext%22).value%3DJSON.stringify(%7Bip%3Ah%2Cbrand%3Abrand%2Ctype%3Asel.value%2Cevidence%3Asource%7D)%3B%7Drecord()%3Bsel.onchange%3Drecord%3Bq(%22liclose%22).onclick%3D()%3D%3Ez.remove()%3Bq(%22licopy%22).onclick%3D()%3D%3E%7Bvar%20x%3Dq(%22litext%22)%3Bx.focus()%3Bx.select()%3Btry%7Bif(d.execCommand(%22copy%22))%7Bq(%22limsg%22).textContent%3D%22Copied%22%3Breturn%3B%7D%7Dcatch(e)%7B%7Dq(%22limsg%22).textContent%3D%22Select%20and%20copy%20text%20manually%22%3B%7D%3B%7Dcatch(e)%7Balert(%22LAN%20Identifier%20error%3A%20%22%2Be)%3B%7D%7D)()%3B";
+$("copyIdentifier").addEventListener("click",async()=>{
+ const feedback=$("identifierFeedback");
+ try{
+  await navigator.clipboard.writeText(DEVICE_IDENTIFIER_BOOKMARKLET);
+  feedback.textContent="已複製辨識書籤！請在 Safari 建立另一個書籤，再把其網址替換為剛複製的程式。";
+ }catch(e){
+  const input=$("identifierManual");input.style.display="block";input.value=DEVICE_IDENTIFIER_BOOKMARKLET;input.focus();input.select();
+  try{feedback.textContent=document.execCommand("copy")?"已使用備援方式複製。請貼到另一個 Safari 書籤網址。":"請長按下方程式並選取全部複製。";}
+  catch(_){feedback.textContent="無法自動複製，請長按下方程式碼全選複製。";}
+ }
+});
+
 const LOCAL_BOOKMARKLET="javascript:(function()%7Btry%7Balert(%22LAN%20Finder%20v2.3.0%20started%22)%3Bvar%20a%3Dlocation.hostname.split(%22.%22)%2Cd%3Ddocument%3Bif(location.protocol!%3D%3D%22http%3A%22%7C%7Ca.length!%3D%3D4%7C%7Ca.some(function(v)%7Breturn%20!%2F%5E%5Cd%2B%24%2F.test(v)%7C%7C%2Bv%3E255%3B%7D))%7Balert(%22Open%20a%20local%20http%3A%2F%2FIP%20page%20first.%22)%3Breturn%3B%7Dvar%20id%3D%22lf-local-panel%22%3Bif(d.getElementById(id))%7Balert(%22LAN%20Finder%20is%20already%20running.%22)%3Breturn%3B%7Dvar%20p%3Da.slice(0%2C3).join(%22.%22)%2B%22.%22%2Cel%3Dd.createElement(%22div%22)%3Bel.id%3Did%3Bel.style.cssText%3D%22position%3Afixed!important%3Binset%3A0!important%3Bz-index%3A2147483647!important%3Bbackground%3Argb(9%2C18%2C33)!important%3Bcolor%3Awhite!important%3Bpadding%3A18px!important%3Boverflow%3Aauto!important%3Bfont%3A14px%20system-ui!important%22%3Bel.innerHTML%3D'%3Ch2%3ELAN%20Finder%20v2.3.0%3C%2Fh2%3E%3Cp%3ENetwork%3A%20'%2Bp%2B'0%2F24%3C%2Fp%3E%3Cbutton%20id%3D%22lfclose%22%3EClose%3C%2Fbutton%3E%20%3Cbutton%20id%3D%22lfknown%22%3ECheck%20known%20URL%3C%2Fbutton%3E%20%3Cbutton%20id%3D%22lfscan%22%3EScan%20port%2080%3C%2Fbutton%3E%20%3Cbutton%20id%3D%22lfstop%22%3EStop%3C%2Fbutton%3E%3Cp%20id%3D%22lfstatus%22%3EReady.%20Scanning%20only%20authorized%20devices.%3C%2Fp%3E%3Cdiv%20id%3D%22lfresults%22%3E%3C%2Fdiv%3E'%3Bd.body.appendChild(el)%3Bvar%20q%3Dfunction(id)%7Breturn%20el.querySelector(%22%23%22%2Bid)%3B%7D%2Cstop%3Dfalse%2Cactive%3Dfalse%2Cctls%3D%5B%5D%3Bfunction%20report(s)%7Bq(%22lfstatus%22).textContent%3Ds%3B%7Dasync%20function%20probe(url)%7Bvar%20c%3Dnew%20AbortController()%2Ct%3DsetTimeout(function()%7Bc.abort()%3B%7D%2C1700)%3Bctls.push(c)%3Btry%7Bawait%20fetch(url%2C%7Bmode%3A%22no-cors%22%2Ccredentials%3A%22omit%22%2Ccache%3A%22no-store%22%2Csignal%3Ac.signal%7D)%3Breturn%20true%3B%7Dcatch(e)%7Breturn%20false%3B%7Dfinally%7BclearTimeout(t)%3Bctls.splice(ctls.indexOf(c)%2C1)%3B%7D%7Dq(%22lfclose%22).onclick%3Dfunction()%7Bstop%3Dtrue%3Bctls.forEach(function(c)%7Bc.abort()%3B%7D)%3Bel.remove()%3B%7D%3Bq(%22lfstop%22).onclick%3Dfunction()%7Bstop%3Dtrue%3Bctls.forEach(function(c)%7Bc.abort()%3B%7D)%3Breport(%22Stopping...%22)%3B%7D%3Bq(%22lfknown%22).onclick%3Dasync%20function()%7Breport(%22Checking%20known%20URL...%22)%3Breport(await%20probe(location.href)%3F%22Known%20page%3A%20reachable%22%3A%22Known%20page%3A%20blocked%20or%20failed.%20No%20TCP%20conclusion.%22)%3B%7D%3Bq(%22lfscan%22).onclick%3Dasync%20function()%7Bif(active)return%3Bactive%3Dtrue%3Bstop%3Dfalse%3Bvar%20i%3D1%2Cdone%3D0%2Cfound%3D0%3Bq(%22lfresults%22).textContent%3D%22%22%3Breport(%22Scanning%20%22%2Bp%2B%221-254%20on%20port%2080...%22)%3Bawait%20Promise.all(Array.from(%7Blength%3A8%7D%2Casync%20function()%7Bwhile(!stop%26%26i%3C%3D254)%7Bvar%20n%3Di%2B%2B%2Curl%3D%22http%3A%2F%2F%22%2Bp%2Bn%2B%22%2F%22%2Cok%3Dawait%20probe(url)%3Bif(stop)break%3Bdone%2B%2B%3Bif(ok)%7Bfound%2B%2B%3Bvar%20link%3Dd.createElement(%22a%22)%3Blink.href%3Durl%3Blink.textContent%3Durl%3Blink.target%3D%22_blank%22%3Blink.style.cssText%3D%22display%3Ablock%3Bcolor%3Aaqua%3Bpadding%3A3px%22%3Bq(%22lfresults%22).appendChild(link)%3B%7Dif(done%258%3D%3D%3D0%7C%7Cok)report(%22Tested%20%22%2Bdone%2B%22%2F254%2C%20web%20replies%20%22%2Bfound%2B%22.%20Failures%20are%20unknown%2C%20not%20closed%20ports.%22)%3B%7D%7D))%3Bactive%3Dfalse%3Breport(%22Finished%3A%20%22%2Bdone%2B%22%2F254%2C%20web%20replies%20%22%2Bfound%2B%22.%20Other%20ports%20not%20tested.%22)%3B%7D%3B%7Dcatch(e)%7Balert(%22LAN%20Finder%20start%20error%3A%20%22%2BString(e))%3B%7D%7D)()%3B";
 $("copyBookmarklet").addEventListener("click",async()=>{
  const msg=$("bookmarkletFeedback");
@@ -106,7 +133,7 @@ $("copyBookmarklet").addEventListener("click",async()=>{
   }catch(_){msg.textContent="請長按下方文字、全選複製，並貼到 Safari 書籤的網址。";}
  }
 });
-const BUILD_VERSION = "2.3.0";
+const BUILD_VERSION = "2.4.0";
 let newerVersion = "";
 async function checkForUpdates(){
  const button=$("checkUpdate");
