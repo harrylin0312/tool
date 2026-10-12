@@ -2,7 +2,7 @@
 try{
 alert("LAN Finder v2.3.0 started");
 var a=location.hostname.split("."),d=document;
-if(location.protocol!=="http:"||a.length!==4||a.some(function(v){return !/^\\d+$/.test(v)||+v>255;})){alert("Open a local http://IP page first.");return;}
+if(location.protocol!=="http:"||a.length!==4||a.some(function(v){return !/^\d+$/.test(v)||+v>255;})){alert("Open a local http://IP page first.");return;}
 var id="lf-local-panel";
 if(d.getElementById(id)){alert("LAN Finder is already running.");return;}
 var p=a.slice(0,3).join(".")+".",el=d.createElement("div");
