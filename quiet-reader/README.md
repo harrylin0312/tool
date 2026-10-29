@@ -1,6 +1,6 @@
 # 靜讀 Quiet Reader
 
-公開閱讀網址：https://quiet-reader-linhengyu.hichipipo.chatgpt.site
+GitHub Pages 公開閱讀網址：https://harrylin0312.github.io/tool/quiet-reader/
 
 完整原始碼、文件與測試程式位於本資料夾。`npm test` 會先產生原創 TXT 與 EPUB 測試資料。
 
