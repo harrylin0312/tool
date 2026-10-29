@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {importTXT,validateBook,zipEntries} from '../dist/content.js';
+test('長篇 TXT 完整保留 360 段、章節與段落順序',async()=>{const bytes=await readFile(new URL('long-reading.txt',import.meta.url));const book=validateBook(await importTXT(new File([bytes],'長篇.txt')));assert.equal(book.chapters.length,3);for(let c=0;c<3;c++){assert.equal(book.chapters[c].paragraphs.length,120);for(let p=0;p<120;p++)assert.ok(book.chapters[c].paragraphs[p].startsWith(`段落 ${c+1}-${String(p).padStart(3,'0')}`))}});
+test('BOM、CRLF、前言與空行處理',async()=>{const b=await importTXT(new File(['\uFEFF前言\r\n\r\n第一章 出發\r\n正文一\r\n正文二'],'test.txt'));assert.equal(b.chapters.length,2);assert.deepEqual(b.chapters[1].paragraphs,['正文一','正文二'])});
+test('合法重複段落保留，不擅自刪減',async()=>{const b=await importTXT(new File(['相同\n相同'],'test.txt'));assert.deepEqual(b.chapters[0].paragraphs,['相同','相同'])});
+test('拒絕空書籍、空章與非文字段落',()=>{for(const b of [{title:'x',chapters:[]},{title:'x',chapters:[{title:'x',paragraphs:[]}]},{title:'x',chapters:[{title:'x',paragraphs:[{}]}]}])assert.throws(()=>validateBook(b))});
+test('EPUB ZIP 解壓支援，保留 spine 與章節檔案',async()=>{const b=await readFile(new URL('sample.epub',import.meta.url));const f=await zipEntries(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength));assert.match(await f.get('OEBPS/book.opf')(),/idref="a".*idref="b"/);assert.match(await f.get('OEBPS/first.xhtml')(),/這是第一段/)});
+test('損毀 EPUB 會回報錯誤',async()=>{await assert.rejects(()=>zipEntries(new ArrayBuffer(32)))});
