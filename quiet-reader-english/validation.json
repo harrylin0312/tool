@@ -1,19 +1,50 @@
 {
-  "part": 1,
-  "chapters": 2,
+  "completedParts": [
+    1,
+    2
+  ],
+  "chapters": 7,
   "sourcePdfPages": [
     3,
-    42
+    98
   ],
-  "paragraphs": 388,
-  "wordTokens": 12409,
-  "uniqueWords": 3041,
-  "wordsWithChineseMeanings": 3041,
+  "paragraphs": 899,
+  "wordTokens": 29438,
+  "uniqueWords": 5488,
+  "wordsWithChineseMeanings": 5488,
   "missingDefinitions": 0,
   "missingCoveredLevels": 0,
-  "chapterWordCounts": [
-    8124,
-    4285
+  "parts": [
+    {
+      "part": 1,
+      "chapters": [
+        1,
+        2
+      ],
+      "sourcePdfPages": [
+        3,
+        42
+      ],
+      "paragraphs": 388,
+      "wordTokens": 12409
+    },
+    {
+      "part": 2,
+      "chapters": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sourcePdfPages": [
+        43,
+        98
+      ],
+      "paragraphs": 511,
+      "wordTokens": 17029
+    }
   ],
-  "indexSha256": "d2e8bfd37fb8c4e40d379e9b5c3854c66f4dbb0b0a47abf8cbc55c60ced5db34"
+  "nextStage": "Part Three; waiting for user to continue",
+  "indexSha256": "709f9c8ab0503dfaddfc4449bf79381d4db3e678c3d766c0e72239c93b2a2a15"
 }
