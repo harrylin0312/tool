@@ -6,15 +6,13 @@ book=json.loads((root/'reader-book.json').read_text())
 lexicon=json.loads((root/'reader-lexicon.json').read_text())
 pattern=r"[A-Za-z]+(?:['’-][A-Za-z]+)*"
 chapters=book['chapters']
-assert [c['number'] for c in chapters]==list(range(1,8))
-assert [len(c['paragraphs']) for c in chapters]==[222,166,119,125,85,47,135]
-assert book['partsCompleted']==[1,2] and not book['completeBook']
+assert [c['number'] for c in chapters]==list(range(1,25))+[None]
+assert len(chapters)==25 and chapters[-1]['kind']=='backmatter'
+assert book['partsCompleted']==[1,2,3,4] and book['completeBook']
 assert chapters[0]['paragraphs'][0].startswith('The sky above the port')
-assert chapters[1]['paragraphs'][-1].endswith('the drifting shoals of waste.')
-assert chapters[2]['paragraphs'][0]=='Home.'
-assert chapters[-1]['paragraphs'][-1].endswith('Each rang in turn, but only once, as he passed.')
-assert [c['number'] for c in chapters if c['partEnd']]==[2,7]
-assert not any('PART THREE -' in p for c in chapters for p in c['paragraphs'])
+assert chapters[23]['paragraphs'][-1].endswith('He never saw Molly again.')
+assert chapters[-1]['paragraphs'][-1].endswith('who know why.')
+assert [c['number'] for c in chapters if c['partEnd']]==[2,7,12,23,24]
 words={m[0].lower().replace('’',"'") for c in chapters for p in c['paragraphs'] for m in re.finditer(pattern,p)}
 assert not words-lexicon.keys(),f'Missing glossary: {words-lexicon.keys()}'
 for word,e in lexicon.items():
@@ -30,12 +28,12 @@ for word in ['denver','peter','orly','tally','wintermute','corto']:
  assert lexicon[word]['scope']=='name' and lexicon[word]['level'] is None,word
 for word in ['case#common','may#name','chin#proper','cutter#proper','letter#i']:assert word in lexicon
 text=(root/'template.html').read_text().replace('/*__BOOK__*/',json.dumps(book,ensure_ascii=False,separators=(',',':'))).replace('/*__LEXICON__*/',json.dumps(lexicon,ensure_ascii=False,separators=(',',':')))
-assert 'word-data' in text and 'app.js?v=4-part-two' in text
+assert 'word-data' in text and 'app.js?v=5-complete' in text
 (root/'index.html').write_text(text)
 parts=[]
 for part in book['partsCompleted']:
  cs=[c for c in chapters if c['part']==part]
  parts.append({'part':part,'chapters':[c['number'] for c in cs],'sourcePdfPages':[min(c['sourceStartPage'] for c in cs),max(c['sourceEndPage'] for c in cs)],'paragraphs':sum(len(c['paragraphs']) for c in cs),'wordTokens':sum(len(re.findall(pattern,p)) for c in cs for p in c['paragraphs'])})
-report={'completedParts':book['partsCompleted'],'chapters':len(chapters),'sourcePdfPages':[3,98],'paragraphs':sum(len(c['paragraphs']) for c in chapters),'wordTokens':sum(x['wordTokens'] for x in parts),'uniqueWords':len(words),'wordsWithChineseMeanings':len(words),'missingDefinitions':0,'missingCoveredLevels':0,'parts':parts,'nextStage':'Part Three; waiting for user to continue','indexSha256':hashlib.sha256(text.encode()).hexdigest()}
+report={'completedParts':book['partsCompleted'],'chapters':24,'readingSections':25,'completeBook':True,'sourcePdfPages':[3,266],'paragraphs':sum(len(c['paragraphs']) for c in chapters),'wordTokens':sum(len(re.findall(pattern,p)) for c in chapters for p in c['paragraphs']),'uniqueWords':len(words),'wordsWithChineseMeanings':len(words),'missingDefinitions':0,'missingCoveredLevels':0,'parts':parts,'indexSha256':hashlib.sha256(text.encode()).hexdigest()}
 (root/'validation.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
 print(json.dumps(report,ensure_ascii=False))
