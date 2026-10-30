@@ -14,1040 +14,1873 @@
       "pos": "冠詞",
       "meaning": "一個；此處用於單數名詞前。",
       "lemma": "a",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "a",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "a/an"
     },
     "about": {
       "pos": "介系詞",
       "meaning": "關於；此處指某種特質存在於他的欠缺之中。",
       "lemma": "about",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "about",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "about"
     },
     "above": {
       "pos": "介系詞",
       "meaning": "在……上方。",
       "lemma": "above",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "above",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "above"
     },
     "across": {
       "pos": "介系詞",
       "meaning": "橫越；此處指從吧檯另一側推過來。",
       "lemma": "across",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "across",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "across"
     },
     "affordable": {
       "pos": "形容詞",
       "meaning": "負擔得起的；afford 的形容詞衍生形式。",
       "lemma": "afford",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 3,
+      "levelSource": "afford",
+      "sourcePage": 23,
+      "matchType": "family",
+      "sourceEntry": "afford"
     },
     "african": {
       "pos": "名詞",
       "meaning": "非洲人；此處指一名高個子的非洲男子。",
       "lemma": "african",
-      "scope": "covered"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "age": {
       "pos": "名詞",
       "meaning": "時代；in an age of 指「在……的時代」。",
       "lemma": "age",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "age",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "age"
     },
     "an": {
       "pos": "冠詞",
       "meaning": "一個；用於母音發音開頭的詞前。",
       "lemma": "an",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "an",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "a/an"
     },
     "and": {
       "pos": "連接詞",
       "meaning": "和；並且。",
       "lemma": "and",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "and",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "and"
     },
     "another": {
       "pos": "限定詞",
       "meaning": "另一個。",
       "lemma": "another",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "another",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "another"
     },
     "antique": {
       "pos": "形容詞",
       "meaning": "古老的、老式的；此處形容義肢手臂。",
       "lemma": "antique",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 5,
+      "levelSource": "antique",
+      "sourcePage": 52,
+      "matchType": "exact",
+      "sourceEntry": "antique"
     },
     "are": {
       "pos": "動詞",
       "meaning": "是；be 的現在式。",
       "lemma": "are",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "are",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "are"
     },
     "arm": {
       "pos": "名詞",
       "meaning": "手臂；此處也用來指義肢手臂。",
       "lemma": "arm",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "arm",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "arm"
     },
     "around": {
       "pos": "介系詞",
       "meaning": "在……周圍。",
       "lemma": "around",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "around",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "around"
     },
     "artiste": {
       "pos": "名詞",
       "meaning": "藝術家、表演藝術家；此處帶揶揄意味，指擅長古怪交易的人。",
       "lemma": "artiste",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "as": {
       "pos": "連接詞",
       "meaning": "當……時；隨著。served him as 則指「對他而言充當……」。",
       "lemma": "as",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "as",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "as"
     },
     "at": {
       "pos": "介系詞",
       "meaning": "在……位置。",
       "lemma": "at",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "at",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "at"
     },
     "bar": {
       "pos": "名詞",
       "meaning": "酒吧；也可指吧檯，依句子而定。",
       "lemma": "bar",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "bar",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "bar"
     },
     "bartender's": {
       "pos": "名詞所有格",
       "meaning": "酒保的；bartender 指調酒、供應酒類的人。",
       "lemma": "bartender's",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "beauty": {
       "pos": "名詞",
       "meaning": "美貌、美麗。",
       "lemma": "beauty",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "beauty",
+      "sourcePage": 1,
+      "matchType": "exact",
+      "sourceEntry": "beauty"
     },
     "belly": {
       "pos": "名詞",
       "meaning": "肚子、腹部。",
       "lemma": "belly",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 3,
+      "levelSource": "belly",
+      "sourcePage": 23,
+      "matchType": "exact",
+      "sourceEntry": "belly"
     },
     "between": {
       "pos": "介系詞",
       "meaning": "在……兩者之間。",
       "lemma": "between",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "between",
+      "sourcePage": 2,
+      "matchType": "exact",
+      "sourceEntry": "between"
     },
     "blues": {
       "pos": "名詞",
       "meaning": "憂鬱；也指藍調音樂，此處為篇名用語。",
       "lemma": "blues",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 5,
+      "levelSource": "blues",
+      "sourcePage": 53,
+      "matchType": "exact",
+      "sourceEntry": "blues"
     },
     "body's": {
       "pos": "名詞所有格／縮寫",
       "meaning": "my body's developed 中是 body has 的縮寫：我的身體已經產生……。",
       "lemma": "body's",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "body",
+      "sourcePage": 2,
+      "matchType": "family",
+      "sourceEntry": "body"
     },
     "brown": {
       "pos": "形容詞",
       "meaning": "褐色的。",
       "lemma": "brown",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "brown",
+      "sourcePage": 2,
+      "matchType": "exact",
+      "sourceEntry": "brown"
     },
     "business": {
       "pos": "名詞",
       "meaning": "生意、交易；此處指可能要找凱斯談的交易。",
       "lemma": "business",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "business",
+      "sourcePage": 13,
+      "matchType": "exact",
+      "sourceEntry": "business"
     },
     "case": {
       "pos": "專有名詞",
       "meaning": "凱斯，小說主角的名字；此頁的 Case 都是人名。",
       "lemma": "case",
-      "scope": "name"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "cased": {
       "pos": "動詞／分詞",
       "meaning": "包覆、裝入外殼；cased in 指「外面包著……」。原形 case。",
       "lemma": "case",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "case",
+      "sourcePage": 2,
+      "matchType": "family",
+      "sourceEntry": "case"
     },
     "channel": {
       "pos": "名詞",
       "meaning": "電視頻道；dead channel 指沒有訊號的頻道。",
       "lemma": "channel",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 3,
+      "levelSource": "channel",
+      "sourcePage": 24,
+      "matchType": "exact",
+      "sourceEntry": "channel"
     },
     "chat": {
       "pos": "專有名詞",
       "meaning": "酒吧 Chatsubo 的簡稱。",
       "lemma": "chat",
-      "scope": "name"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "chatsubo": {
       "pos": "專有名詞",
       "meaning": "「茶壺」酒吧，小說中的酒吧名稱。",
       "lemma": "chatsubo",
-      "scope": "name"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "cheekbones": {
       "pos": "名詞",
       "meaning": "顴骨；cheekbone 的複數。",
       "lemma": "cheekbones",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "chiba": {
       "pos": "專有名詞",
       "meaning": "千葉，日本地名。",
       "lemma": "chiba",
-      "scope": "name"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "city": {
       "pos": "名詞",
       "meaning": "城市。",
       "lemma": "city",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "city",
+      "sourcePage": 2,
+      "matchType": "exact",
+      "sourceEntry": "city"
     },
     "claw": {
       "pos": "名詞",
       "meaning": "爪子、鉤爪；此處指義肢的爪狀手部。",
       "lemma": "claw",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "claw",
+      "sourcePage": 13,
+      "matchType": "exact",
+      "sourceEntry": "claw"
     },
     "color": {
       "pos": "名詞",
       "meaning": "顏色。",
       "lemma": "color",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "color",
+      "sourcePage": 2,
+      "matchType": "exact",
+      "sourceEntry": "color"
     },
     "could": {
       "pos": "助動詞",
       "meaning": "可以、能夠；can 的過去式，此處描述在酒吧可能遇到的情況。",
       "lemma": "could",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "can",
+      "matchType": "family",
+      "sourcePage": 2,
+      "sourceEntry": "can"
     },
     "crisp": {
       "pos": "形容詞",
       "meaning": "挺括整潔的；此處形容海軍制服。",
       "lemma": "crisp",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 3,
+      "levelSource": "crisp",
+      "sourcePage": 25,
+      "matchType": "exact",
+      "sourceEntry": "crisp"
     },
     "crowd": {
       "pos": "名詞",
       "meaning": "人群。",
       "lemma": "crowd",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "crowd",
+      "sourcePage": 14,
+      "matchType": "exact",
+      "sourceEntry": "crowd"
     },
     "dead": {
       "pos": "形容詞",
       "meaning": "沒有運作的、沒有訊號的；此處形容電視頻道。",
       "lemma": "dead",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "dead",
+      "sourcePage": 3,
+      "matchType": "exact",
+      "sourceEntry": "dead"
     },
     "deal": {
       "pos": "名詞",
       "meaning": "交易；此處指略顯古怪的交易。",
       "lemma": "deal",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "deal",
+      "sourcePage": 3,
+      "matchType": "exact",
+      "sourceEntry": "deal"
     },
     "decay": {
       "pos": "名詞",
       "meaning": "腐朽、腐蝕；此處指牙齒的蛀蝕。",
       "lemma": "decay",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 5,
+      "levelSource": "decay",
+      "sourcePage": 55,
+      "matchType": "exact",
+      "sourceEntry": "decay"
     },
     "deficiency": {
       "pos": "名詞",
       "meaning": "缺乏、不足；drug deficiency 是對藥物依賴的戲謔說法。",
       "lemma": "deficiency",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 6,
+      "levelSource": "deficiency",
+      "sourcePage": 66,
+      "matchType": "exact",
+      "sourceEntry": "deficiency"
     },
     "developed": {
       "pos": "動詞",
       "meaning": "產生、形成；develop 的過去分詞。",
       "lemma": "develop",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "develop",
+      "sourcePage": 14,
+      "matchType": "family",
+      "sourceEntry": "develop(ment)"
     },
     "door": {
       "pos": "名詞",
       "meaning": "門、門口。",
       "lemma": "door",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "door",
+      "sourcePage": 3,
+      "matchType": "exact",
+      "sourceEntry": "door"
     },
     "draft": {
       "pos": "名詞",
       "meaning": "生啤酒；draft Kirin 指麒麟牌生啤酒。",
       "lemma": "draft",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 4,
+      "levelSource": "draft",
+      "sourcePage": 40,
+      "matchType": "exact",
+      "sourceEntry": "draft"
     },
     "drink": {
       "pos": "動詞",
       "meaning": "喝、飲酒。",
       "lemma": "drink",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "drink",
+      "sourcePage": 3,
+      "matchType": "exact",
+      "sourceEntry": "drink"
     },
     "drug": {
       "pos": "名詞",
       "meaning": "藥物；此處語境指毒品或成癮藥物。",
       "lemma": "drug",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "drug",
+      "sourcePage": 14,
+      "matchType": "exact",
+      "sourceEntry": "drug"
     },
     "early": {
       "pos": "副詞",
       "meaning": "稍早、較早。",
       "lemma": "early",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "early",
+      "sourcePage": 3,
+      "matchType": "exact",
+      "sourceEntry": "early"
     },
     "east": {
       "pos": "形容詞",
       "meaning": "東部的；East European 指東歐的。",
       "lemma": "east",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "east",
+      "sourcePage": 3,
+      "matchType": "exact",
+      "sourceEntry": "east"
     },
     "european": {
       "pos": "形容詞",
       "meaning": "歐洲的。",
       "lemma": "european",
-      "scope": "covered"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "expatriates": {
       "pos": "名詞",
       "meaning": "旅居海外的人、外居者；此處指在日本生活的外國人。",
       "lemma": "expatriate",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "filled": {
       "pos": "動詞",
       "meaning": "裝滿；fill 的過去式。",
       "lemma": "fill",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "fill",
+      "sourcePage": 4,
+      "matchType": "family",
+      "sourceEntry": "fill"
     },
     "for": {
       "pos": "介系詞",
       "meaning": "為了、供……使用；for a week 表示持續一週。",
       "lemma": "for",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "for",
+      "sourcePage": 4,
+      "matchType": "exact",
+      "sourceEntry": "for"
     },
     "force-feedback": {
       "pos": "複合名詞／修飾語",
       "meaning": "力回饋；裝置將接觸到的力量回傳給操作者。",
       "lemma": "force-feedback",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 6,
+      "levelSource": "feedback",
+      "sourcePage": 68,
+      "matchType": "compound",
+      "sourceEntry": "feedback",
+      "components": [
+        {
+          "word": "force",
+          "level": 1
+        },
+        {
+          "word": "feedback",
+          "level": 6
+        }
+      ]
     },
     "found": {
       "pos": "動詞",
       "meaning": "找到；find 的過去式。",
       "lemma": "find",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "find",
+      "sourcePage": 4,
+      "matchType": "family",
+      "sourceEntry": "find"
     },
     "funny": {
       "pos": "形容詞",
       "meaning": "古怪的、有點可疑的；此處形容交易。",
       "lemma": "funny",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "funny",
+      "sourcePage": 4,
+      "matchType": "exact",
+      "sourceEntry": "funny"
     },
     "giggled": {
       "pos": "動詞",
       "meaning": "咯咯笑、輕笑；giggle 的過去式。",
       "lemma": "giggle",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 4,
+      "levelSource": "giggle",
+      "sourcePage": 42,
+      "matchType": "family",
+      "sourceEntry": "giggle"
     },
     "girl": {
       "pos": "名詞",
       "meaning": "女孩、年輕女子。",
       "lemma": "girl",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "girl",
+      "sourcePage": 4,
+      "matchType": "exact",
+      "sourceEntry": "girl"
     },
     "glasses": {
       "pos": "名詞",
       "meaning": "玻璃杯；此處不是眼鏡。",
       "lemma": "glass",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "glasses",
+      "sourcePage": 4,
+      "matchType": "exact",
+      "sourceEntry": "glasses"
     },
     "good": {
       "pos": "形容詞",
       "meaning": "好的、健全的；his good hand 指他未裝義肢的那隻手。",
       "lemma": "good",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "good",
+      "sourcePage": 4,
+      "matchType": "exact",
+      "sourceEntry": "good"
     },
     "grubby": {
       "pos": "形容詞",
       "meaning": "髒兮兮的、沾滿汙垢的。",
       "lemma": "grubby",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "grunted": {
       "pos": "動詞",
       "meaning": "發出低沉的哼聲；grunt 的過去式。",
       "lemma": "grunt",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "hand": {
       "pos": "名詞",
       "meaning": "手。",
       "lemma": "hand",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "hand",
+      "sourcePage": 4,
+      "matchType": "exact",
+      "sourceEntry": "hand"
     },
     "he": {
       "pos": "代名詞",
       "meaning": "他。",
       "lemma": "he",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "he",
+      "sourcePage": 4,
+      "matchType": "exact",
+      "sourceEntry": "he"
     },
     "hear": {
       "pos": "動詞",
       "meaning": "聽見。",
       "lemma": "hear",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "hear",
+      "sourcePage": 4,
+      "matchType": "exact",
+      "sourceEntry": "hear"
     },
     "heard": {
       "pos": "動詞",
       "meaning": "聽見；hear 的過去式。",
       "lemma": "hear",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "hear",
+      "sourcePage": 4,
+      "matchType": "family",
+      "sourceEntry": "hear"
     },
     "heraldic": {
       "pos": "形容詞",
       "meaning": "紋章的、具有紋章意味的；此處暗示他的醜陋如同鮮明的身分標誌。",
       "lemma": "heraldic",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 5,
+      "levelSource": "herald",
+      "sourcePage": 56,
+      "matchType": "family",
+      "sourceEntry": "herald"
     },
     "here": {
       "pos": "副詞",
       "meaning": "這裡；in here 指在這間酒吧裡。",
       "lemma": "here",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "here",
+      "sourcePage": 5,
+      "matchType": "exact",
+      "sourceEntry": "here"
     },
     "herr": {
       "pos": "稱謂",
       "meaning": "先生；德語男性敬稱，Herr Case 即「凱斯先生」。",
       "lemma": "herr",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "him": {
       "pos": "代名詞",
       "meaning": "他；受詞形式。",
       "lemma": "him",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "him",
+      "sourcePage": 5,
+      "matchType": "exact",
+      "sourceEntry": "him"
     },
     "his": {
       "pos": "限定詞／代名詞",
       "meaning": "他的。",
       "lemma": "his",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "his",
+      "sourcePage": 5,
+      "matchType": "exact",
+      "sourceEntry": "his"
     },
     "i'm": {
       "pos": "縮寫",
       "meaning": "I am：我是；I'm using 在此指「我在用藥」。",
       "lemma": "i'm",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "am",
+      "sourcePage": 1,
+      "matchType": "family",
+      "sourceEntry": "am"
     },
     "in": {
       "pos": "介系詞",
       "meaning": "在……裡；在……的狀態中。",
       "lemma": "in",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "in",
+      "sourcePage": 5,
+      "matchType": "exact",
+      "sourceEntry": "in"
     },
     "it": {
       "pos": "代名詞",
       "meaning": "它、這件事；具體所指依句子而定。",
       "lemma": "it",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "it",
+      "sourcePage": 5,
+      "matchType": "exact",
+      "sourceEntry": "it"
     },
     "it's": {
       "pos": "縮寫",
       "meaning": "It is：它是、這是。",
       "lemma": "it's",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "it",
+      "sourcePage": 5,
+      "matchType": "family",
+      "sourceEntry": "it"
     },
     "japanese": {
       "pos": "名詞",
       "meaning": "日語；此處指在酒吧裡聽到的語言。",
       "lemma": "japanese",
-      "scope": "covered"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "jerking": {
       "pos": "動詞／分詞",
       "meaning": "猛然抽動、一頓一頓地動；原形 jerk。",
       "lemma": "jerk",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "joeboys": {
       "pos": "名詞",
       "meaning": "打手、隨行手下；小說中的俚語，joeboy 的複數。",
       "lemma": "joeboy",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "joke": {
       "pos": "名詞",
       "meaning": "笑話、玩笑。",
       "lemma": "joke",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "joke",
+      "sourcePage": 5,
+      "matchType": "exact",
+      "sourceEntry": "joke"
     },
     "kirin": {
       "pos": "專有名詞",
       "meaning": "麒麟，日本啤酒品牌。",
       "lemma": "kirin",
-      "scope": "name"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "lack": {
       "pos": "名詞",
       "meaning": "缺乏；his lack of it 此處指他缺乏美貌。",
       "lemma": "lack",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "lack",
+      "sourcePage": 5,
+      "matchType": "exact",
+      "sourceEntry": "lack"
     },
     "laughter": {
       "pos": "名詞",
       "meaning": "笑、笑聲。",
       "lemma": "laughter",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 3,
+      "levelSource": "laughter",
+      "sourcePage": 28,
+      "matchType": "exact",
+      "sourceEntry": "laughter"
     },
     "legend": {
       "pos": "名詞",
       "meaning": "傳說；the stuff of legend 指「足以成為傳說的事物」。",
       "lemma": "legend",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 4,
+      "levelSource": "legend",
+      "sourcePage": 44,
+      "matchType": "exact",
+      "sourceEntry": "legend"
     },
     "like": {
       "pos": "介系詞",
       "meaning": "像、如同；not like 與 like my body's developed 均用於口語比較。",
       "lemma": "like",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "like",
+      "sourcePage": 5,
+      "matchType": "exact",
+      "sourceEntry": "like"
     },
     "lonny": {
       "pos": "專有名詞",
       "meaning": "朗尼；Lonny Zone 是小說中的人物。",
       "lemma": "lonny",
-      "scope": "name"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "manipulator": {
       "pos": "名詞",
       "meaning": "機械操作臂、操縱裝置；此處指義肢的機械操作部件。",
       "lemma": "manipulator",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 6,
+      "levelSource": "manipulate",
+      "sourcePage": 70,
+      "matchType": "family",
+      "sourceEntry": "manipulate"
     },
     "massive": {
       "pos": "形容詞",
       "meaning": "極大的、嚴重的。",
       "lemma": "massive",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 5,
+      "levelSource": "massive",
+      "sourcePage": 58,
+      "matchType": "exact",
+      "sourceEntry": "massive"
     },
     "maybe": {
       "pos": "副詞",
       "meaning": "也許、或許。",
       "lemma": "maybe",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "maybe",
+      "sourcePage": 6,
+      "matchType": "exact",
+      "sourceEntry": "maybe"
     },
     "military": {
       "pos": "形容詞",
       "meaning": "軍用的、軍事的。",
       "lemma": "military",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "military",
+      "sourcePage": 17,
+      "matchType": "exact",
+      "sourceEntry": "military"
     },
     "monotonously": {
       "pos": "副詞",
       "meaning": "單調地、反覆以相同方式；由 monotonous 衍生。",
       "lemma": "monotonous",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 6,
+      "levelSource": "monotonous",
+      "sourcePage": 70,
+      "matchType": "family",
+      "sourceEntry": "monotonous"
     },
     "much": {
       "pos": "副詞／限定詞",
       "meaning": "很、非常；too much the artiste 指「太有藝術家脾氣」。",
       "lemma": "much",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "much",
+      "sourcePage": 6,
+      "matchType": "exact",
+      "sourceEntry": "much"
     },
     "mug": {
       "pos": "名詞",
       "meaning": "大杯、有柄杯；此處指啤酒杯。",
       "lemma": "mug",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "mug",
+      "sourcePage": 6,
+      "matchType": "exact",
+      "sourceEntry": "mug"
     },
     "my": {
       "pos": "限定詞",
       "meaning": "我的。",
       "lemma": "my",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "my",
+      "sourcePage": 6,
+      "matchType": "exact",
+      "sourceEntry": "my"
     },
     "naval": {
       "pos": "形容詞",
       "meaning": "海軍的。",
       "lemma": "naval",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 6,
+      "levelSource": "naval",
+      "sourcePage": 70,
+      "matchType": "exact",
+      "sourceEntry": "naval"
     },
     "never": {
       "pos": "副詞",
       "meaning": "從未、一次也沒有。",
       "lemma": "never",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "never",
+      "sourcePage": 6,
+      "matchType": "exact",
+      "sourceEntry": "never"
     },
     "not": {
       "pos": "副詞",
       "meaning": "不、不是。",
       "lemma": "not",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "not",
+      "sourcePage": 6,
+      "matchType": "exact",
+      "sourceEntry": "not"
     },
     "nudged": {
       "pos": "動詞",
       "meaning": "用手肘輕推、輕碰；nudge 的過去式。",
       "lemma": "nudge",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "of": {
       "pos": "介系詞",
       "meaning": "……的；也用於表達材料、所屬或內容。",
       "lemma": "of",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "of",
+      "sourcePage": 7,
+      "matchType": "exact",
+      "sourceEntry": "of"
     },
     "on": {
       "pos": "介系詞",
       "meaning": "在……上；to his right 等附近語句需一起理解。",
       "lemma": "on",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "on",
+      "sourcePage": 7,
+      "matchType": "exact",
+      "sourceEntry": "on"
     },
     "one": {
       "pos": "數詞／代名詞",
       "meaning": "一、一個；one of 指「……當中的一個」。",
       "lemma": "one",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "one",
+      "sourcePage": 7,
+      "matchType": "exact",
+      "sourceEntry": "one"
     },
     "overhang": {
       "pos": "名詞",
       "meaning": "向外突出、懸垂的部分；此處指凸出垂著的肚子。",
       "lemma": "overhang",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "part": {
       "pos": "名詞",
       "meaning": "部分、部；此處為小說的第一部。",
       "lemma": "part",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "part",
+      "sourcePage": 7,
+      "matchType": "exact",
+      "sourceEntry": "part"
     },
     "pink": {
       "pos": "形容詞",
       "meaning": "粉紅色的。",
       "lemma": "pink",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "pink",
+      "sourcePage": 18,
+      "matchType": "exact",
+      "sourceEntry": "pink"
     },
     "place": {
       "pos": "名詞",
       "meaning": "位置、位子。",
       "lemma": "place",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "place",
+      "sourcePage": 7,
+      "matchType": "exact",
+      "sourceEntry": "place"
     },
     "plastic": {
       "pos": "名詞",
       "meaning": "塑膠。",
       "lemma": "plastic",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 3,
+      "levelSource": "plastic",
+      "sourcePage": 30,
+      "matchType": "exact",
+      "sourceEntry": "plastic"
     },
     "port": {
       "pos": "名詞",
       "meaning": "港口。",
       "lemma": "port",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "port",
+      "sourcePage": 19,
+      "matchType": "exact",
+      "sourceEntry": "port"
     },
     "precise": {
       "pos": "形容詞",
       "meaning": "精確的、整齊分明的。",
       "lemma": "precise",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 4,
+      "levelSource": "precise",
+      "sourcePage": 47,
+      "matchType": "exact",
+      "sourceEntry": "precise"
     },
     "professional": {
       "pos": "形容詞",
       "meaning": "專業的、以此為業的；professional expatriates 帶有長期旅外者的意味。",
       "lemma": "professional",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 4,
+      "levelSource": "professional",
+      "sourcePage": 47,
+      "matchType": "exact",
+      "sourceEntry": "professional"
     },
     "prosthesis": {
       "pos": "名詞",
       "meaning": "義肢、人工替代物；此處指軍用義肢手臂。",
       "lemma": "prosthesis",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "prosthetic": {
       "pos": "形容詞",
       "meaning": "義肢的、人工替代肢體的。",
       "lemma": "prosthetic",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "ratz": {
       "pos": "專有名詞",
       "meaning": "拉茲，酒吧的酒保。",
       "lemma": "ratz",
-      "scope": "name"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "reached": {
       "pos": "動詞",
       "meaning": "伸手；reached for 指伸手去拿。原形 reach。",
       "lemma": "reach",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "reach",
+      "sourcePage": 7,
+      "matchType": "family",
+      "sourceEntry": "reach"
     },
     "ridged": {
       "pos": "形容詞／分詞",
       "meaning": "形成隆起紋路的；此處指顴骨上的傷疤一道道隆起。",
       "lemma": "ridge",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 5,
+      "levelSource": "ridge",
+      "sourcePage": 60,
+      "matchType": "family",
+      "sourceEntry": "ridge"
     },
     "right": {
       "pos": "名詞",
       "meaning": "右邊；to his right 指在他的右側。",
       "lemma": "right",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "right",
+      "sourcePage": 8,
+      "matchType": "exact",
+      "sourceEntry": "right"
     },
     "rows": {
       "pos": "名詞",
       "meaning": "一排排；row 的複數。",
       "lemma": "row",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "row",
+      "sourcePage": 8,
+      "matchType": "family",
+      "sourceEntry": "row"
     },
     "russian": {
       "pos": "形容詞",
       "meaning": "俄羅斯的、俄製的。",
       "lemma": "russian",
-      "scope": "covered"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "said": {
       "pos": "動詞",
       "meaning": "說；say 的過去式。",
       "lemma": "say",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "say",
+      "sourcePage": 8,
+      "matchType": "family",
+      "sourceEntry": "say"
     },
     "saw": {
       "pos": "動詞",
       "meaning": "看見；see 的過去式。",
       "lemma": "see",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "see",
+      "sourcePage": 8,
+      "matchType": "family",
+      "sourceEntry": "see"
     },
     "say": {
       "pos": "動詞",
       "meaning": "說。",
       "lemma": "say",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "say",
+      "sourcePage": 8,
+      "matchType": "exact",
+      "sourceEntry": "say"
     },
     "scars": {
       "pos": "名詞",
       "meaning": "傷疤；scar 的複數。",
       "lemma": "scar",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 5,
+      "levelSource": "scar",
+      "sourcePage": 61,
+      "matchType": "family",
+      "sourceEntry": "scar"
     },
     "scratched": {
       "pos": "動詞",
       "meaning": "抓、搔；scratch 的過去式。",
       "lemma": "scratch",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 4,
+      "levelSource": "scratch",
+      "sourcePage": 48,
+      "matchType": "family",
+      "sourceEntry": "scratch"
     },
     "served": {
       "pos": "動詞",
       "meaning": "充當、起……作用；served him as laughter 指對他而言相當於笑聲。",
       "lemma": "serve",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "serve",
+      "sourcePage": 8,
+      "matchType": "family",
+      "sourceEntry": "serve"
     },
     "seven-function": {
       "pos": "複合形容詞",
       "meaning": "具有七種功能的。",
       "lemma": "seven-function",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "function",
+      "sourcePage": 15,
+      "matchType": "compound",
+      "sourceEntry": "function",
+      "components": [
+        {
+          "word": "seven",
+          "level": 1
+        },
+        {
+          "word": "function",
+          "level": 2
+        }
+      ]
     },
     "shouldered": {
       "pos": "動詞",
       "meaning": "用肩膀推擠前進；shouldered his way through 指用肩膀擠過人群。",
       "lemma": "shoulder",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "shoulder",
+      "sourcePage": 8,
+      "matchType": "family",
+      "sourceEntry": "shoulder"
     },
     "shoving": {
       "pos": "動詞／分詞",
       "meaning": "推、用力推動；原形 shove。",
       "lemma": "shove",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 5,
+      "levelSource": "shove",
+      "sourcePage": 61,
+      "matchType": "family",
+      "sourceEntry": "shove"
     },
     "shrugged": {
       "pos": "動詞",
       "meaning": "聳肩；shrug 的過去式。",
       "lemma": "shrug",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 4,
+      "levelSource": "shrug",
+      "sourcePage": 49,
+      "matchType": "family",
+      "sourceEntry": "shrug"
     },
     "sky": {
       "pos": "名詞",
       "meaning": "天空。",
       "lemma": "sky",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "sky",
+      "sourcePage": 9,
+      "matchType": "exact",
+      "sourceEntry": "sky"
     },
     "slightly": {
       "pos": "副詞",
       "meaning": "稍微、有點。",
       "lemma": "slightly",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 4,
+      "levelSource": "slight",
+      "sourcePage": 49,
+      "matchType": "family",
+      "sourceEntry": "slight"
     },
     "smile": {
       "pos": "名詞",
       "meaning": "微笑、笑容。",
       "lemma": "smile",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "smile",
+      "sourcePage": 9,
+      "matchType": "exact",
+      "sourceEntry": "smile"
     },
     "smiled": {
       "pos": "動詞",
       "meaning": "微笑；smile 的過去式。",
       "lemma": "smile",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "smile",
+      "sourcePage": 9,
+      "matchType": "family",
+      "sourceEntry": "smile"
     },
     "some": {
       "pos": "限定詞",
       "meaning": "一些、某種。",
       "lemma": "some",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "some",
+      "sourcePage": 9,
+      "matchType": "exact",
+      "sourceEntry": "some"
     },
     "someone": {
       "pos": "代名詞",
       "meaning": "某人、有人。",
       "lemma": "someone",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "someone",
+      "sourcePage": 9,
+      "matchType": "exact",
+      "sourceEntry": "someone"
     },
     "something": {
       "pos": "代名詞",
       "meaning": "某種東西、某種特質。",
       "lemma": "something",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "something",
+      "sourcePage": 9,
+      "matchType": "exact",
+      "sourceEntry": "something"
     },
     "sound": {
       "pos": "名詞",
       "meaning": "聲音。",
       "lemma": "sound",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "sound",
+      "sourcePage": 9,
+      "matchType": "exact",
+      "sourceEntry": "sound"
     },
     "sprawl": {
       "pos": "專有名詞／修飾語",
       "meaning": "「蔓生都會區」，小說中連綿相接的大都市地帶；此處指其口音或笑話風格。",
       "lemma": "sprawl",
-      "scope": "name"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "steel": {
       "pos": "名詞",
       "meaning": "鋼、鋼材。",
       "lemma": "steel",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "steel",
+      "sourcePage": 20,
+      "matchType": "exact",
+      "sourceEntry": "steel"
     },
     "stuff": {
       "pos": "名詞",
       "meaning": "東西、材料；the stuff of legend 指足以成為傳說的事物。",
       "lemma": "stuff",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 3,
+      "levelSource": "stuff",
+      "sourcePage": 32,
+      "matchType": "exact",
+      "sourceEntry": "stuff"
     },
     "tall": {
       "pos": "形容詞",
       "meaning": "高個子的。",
       "lemma": "tall",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "tall",
+      "sourcePage": 9,
+      "matchType": "exact",
+      "sourceEntry": "tall"
     },
     "tan": {
       "pos": "名詞",
       "meaning": "曬黑的膚色；unlikely tan 暗示那種膚色在此地並不尋常。",
       "lemma": "tan",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 5,
+      "levelSource": "tan",
+      "sourcePage": 62,
+      "matchType": "exact",
+      "sourceEntry": "tan"
     },
     "teeth": {
       "pos": "名詞",
       "meaning": "牙齒；tooth 的不規則複數。",
       "lemma": "tooth",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "tooth",
+      "sourcePage": 21,
+      "matchType": "family",
+      "sourceEntry": "tooth"
     },
     "television": {
       "pos": "名詞",
       "meaning": "電視；此處以無訊號電視的顏色比喻天空。",
       "lemma": "television",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "television",
+      "sourcePage": 21,
+      "matchType": "exact",
+      "sourceEntry": "television/TV"
     },
     "tending": {
       "pos": "動詞／分詞",
       "meaning": "照料、看管；tending bar 指當酒保、照看吧檯。原形 tend。",
       "lemma": "tend",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 3,
+      "levelSource": "tend",
+      "sourcePage": 33,
+      "matchType": "family",
+      "sourceEntry": "tend"
     },
     "the": {
       "pos": "冠詞",
       "meaning": "這個、那個；用於特定或已知的人事物前。",
       "lemma": "the",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "the",
+      "sourcePage": 9,
+      "matchType": "exact",
+      "sourceEntry": "the"
     },
     "there": {
       "pos": "副詞",
       "meaning": "那裡。",
       "lemma": "there",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "there",
+      "sourcePage": 9,
+      "matchType": "exact",
+      "sourceEntry": "there"
     },
     "this": {
       "pos": "限定詞／代名詞",
       "meaning": "這個、這種。",
       "lemma": "this",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "this",
+      "sourcePage": 10,
+      "matchType": "exact",
+      "sourceEntry": "this"
     },
     "through": {
       "pos": "介系詞",
       "meaning": "穿過、通過。",
       "lemma": "through",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "through",
+      "sourcePage": 21,
+      "matchType": "exact",
+      "sourceEntry": "through"
     },
     "to": {
       "pos": "介系詞／不定詞標記",
       "meaning": "向、到；tuned to 指調到某個頻道。",
       "lemma": "to",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "to",
+      "sourcePage": 10,
+      "matchType": "exact",
+      "sourceEntry": "to"
     },
     "too": {
       "pos": "副詞",
       "meaning": "太、過於。",
       "lemma": "too",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "too",
+      "sourcePage": 10,
+      "matchType": "exact",
+      "sourceEntry": "too"
     },
     "tray": {
       "pos": "名詞",
       "meaning": "托盤。",
       "lemma": "tray",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 3,
+      "levelSource": "tray",
+      "sourcePage": 33,
+      "matchType": "exact",
+      "sourceEntry": "tray"
     },
     "tribal": {
       "pos": "形容詞",
       "meaning": "部落的；tribal scars 指帶有部落文化意義的疤痕。",
       "lemma": "tribal",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 4,
+      "levelSource": "tribal",
+      "sourcePage": 50,
+      "matchType": "exact",
+      "sourceEntry": "tribal"
     },
     "tuned": {
       "pos": "動詞／分詞",
       "meaning": "調頻、調到；原形 tune。",
       "lemma": "tune",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 3,
+      "levelSource": "tune",
+      "sourcePage": 33,
+      "matchType": "family",
+      "sourceEntry": "tune"
     },
     "two": {
       "pos": "數詞",
       "meaning": "二、兩個。",
       "lemma": "two",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "two",
+      "sourcePage": 10,
+      "matchType": "exact",
+      "sourceEntry": "two"
     },
     "ugliness": {
       "pos": "名詞",
       "meaning": "醜陋；ugly 的名詞衍生形式。",
       "lemma": "ugly",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "ugly",
+      "sourcePage": 21,
+      "matchType": "family",
+      "sourceEntry": "ugly"
     },
     "uniform": {
       "pos": "名詞",
       "meaning": "制服。",
       "lemma": "uniform",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 2,
+      "levelSource": "uniform",
+      "sourcePage": 21,
+      "matchType": "exact",
+      "sourceEntry": "uniform"
     },
     "unlikely": {
       "pos": "形容詞",
       "meaning": "不太可能出現的、不尋常的；此處形容曬黑的膚色。",
       "lemma": "likely",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "likely",
+      "sourcePage": 5,
+      "matchType": "family",
+      "sourceEntry": "likely"
     },
     "using": {
       "pos": "動詞／分詞",
       "meaning": "使用；此處口語指使用毒品。原形 use。",
       "lemma": "use",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "use",
+      "sourcePage": 10,
+      "matchType": "family",
+      "sourceEntry": "use"
     },
     "voice": {
       "pos": "名詞",
       "meaning": "聲音、口音。",
       "lemma": "voice",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "voice",
+      "sourcePage": 10,
+      "matchType": "exact",
+      "sourceEntry": "voice"
     },
     "wage": {
       "pos": "專有名詞",
       "meaning": "韋奇，小說中的人物；此處不是「工資」。",
       "lemma": "wage",
-      "scope": "name"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     },
     "was": {
       "pos": "動詞",
       "meaning": "是、處於；be 的過去式。",
       "lemma": "be",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "be",
+      "sourcePage": 1,
+      "matchType": "family",
+      "sourceEntry": "be"
     },
     "way": {
       "pos": "名詞",
       "meaning": "路、行進的方向或方式；shouldered his way 指用肩膀擠出一條路。",
       "lemma": "way",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "way",
+      "sourcePage": 10,
+      "matchType": "exact",
+      "sourceEntry": "way"
     },
     "webwork": {
       "pos": "名詞",
       "meaning": "網狀結構、交錯成網的東西；此處形容牙齒上鋼材與蛀蝕交織。",
       "lemma": "webwork",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "week": {
       "pos": "名詞",
       "meaning": "一週、星期。",
       "lemma": "week",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "week",
+      "sourcePage": 10,
+      "matchType": "exact",
+      "sourceEntry": "week"
     },
     "were": {
       "pos": "動詞",
       "meaning": "是、處於；be 的過去式，用於複數主詞等。",
       "lemma": "be",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "be",
+      "sourcePage": 1,
+      "matchType": "family",
+      "sourceEntry": "be"
     },
     "whined": {
       "pos": "動詞",
       "meaning": "發出尖細的嗡鳴聲；此處形容機械臂的聲音。原形 whine。",
       "lemma": "whine",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 5,
+      "levelSource": "whine",
+      "sourcePage": 63,
+      "matchType": "family",
+      "sourceEntry": "whine"
     },
     "white-shirted": {
       "pos": "複合形容詞",
       "meaning": "穿著白襯衫的；此處形容肚子裹在白襯衫裡。",
       "lemma": "white-shirted",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "shirt",
+      "sourcePage": 8,
+      "matchType": "compound",
+      "sourceEntry": "shirt",
+      "components": [
+        {
+          "word": "white",
+          "level": 1
+        }
+      ]
     },
     "whores": {
       "pos": "名詞",
       "meaning": "妓女；粗俗且帶貶意的用語，whore 的複數。",
       "lemma": "whore",
-      "scope": "outside"
+      "scope": "outside",
+      "level": null,
+      "levelSource": null,
+      "matchType": "outside"
     },
     "whose": {
       "pos": "關係限定詞",
       "meaning": "其……的；引出前述男子的顴骨特徵。",
       "lemma": "whose",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "whose",
+      "sourcePage": 10,
+      "matchType": "exact",
+      "sourceEntry": "whose"
     },
     "widened": {
       "pos": "動詞",
       "meaning": "擴大、變寬；笑容加深。原形 widen，與 wide 同詞族。",
       "lemma": "wide",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "wide",
+      "sourcePage": 10,
+      "matchType": "family",
+      "sourceEntry": "wide"
     },
     "with": {
       "pos": "介系詞",
       "meaning": "和、帶著、用；依句中搭配理解。",
       "lemma": "with",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "with",
+      "sourcePage": 11,
+      "matchType": "exact",
+      "sourceEntry": "with"
     },
     "words": {
       "pos": "名詞",
       "meaning": "字、話語；word 的複數。",
       "lemma": "word",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "word",
+      "sourcePage": 11,
+      "matchType": "family",
+      "sourceEntry": "word"
     },
     "you": {
       "pos": "代名詞",
       "meaning": "你、你們；也可泛指任何人。",
       "lemma": "you",
-      "scope": "covered"
+      "scope": "covered",
+      "level": 1,
+      "levelSource": "you",
+      "sourcePage": 11,
+      "matchType": "exact",
+      "sourceEntry": "you"
     },
     "zone's": {
       "pos": "專有名詞所有格",
       "meaning": "佐恩的；此處指 Lonny Zone 所屬或旗下的人。",
       "lemma": "zone's",
-      "scope": "name"
+      "scope": "name",
+      "level": null,
+      "levelSource": null,
+      "matchType": "name"
     }
   },
-  "version": 1
+  "version": 2
 }
