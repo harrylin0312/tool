@@ -1,0 +1,19 @@
+{
+  "part": 1,
+  "chapters": 2,
+  "sourcePdfPages": [
+    3,
+    42
+  ],
+  "paragraphs": 388,
+  "wordTokens": 12409,
+  "uniqueWords": 3041,
+  "wordsWithChineseMeanings": 3041,
+  "missingDefinitions": 0,
+  "missingCoveredLevels": 0,
+  "chapterWordCounts": [
+    8124,
+    4285
+  ],
+  "indexSha256": "750aaf7ea998546d04bc117b2a51ad711f0d3b46bbd59305023a97b68f8670c3"
+}
