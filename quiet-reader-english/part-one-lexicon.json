@@ -157,7 +157,7 @@
   },
   "addiction": {
     "pos": "名詞／其他詞性",
-    "meaning": "n.濫用；上癮 vt.管理",
+    "meaning": "n.濫用；上癮",
     "lemma": "addiction",
     "scope": "covered",
     "level": 6,
@@ -883,7 +883,7 @@
   },
   "anyway": {
     "pos": "副詞",
-    "meaning": "adv.無論如何 / adv.在任何地方",
+    "meaning": "adv.無論如何",
     "lemma": "anyway",
     "scope": "covered",
     "level": 2,
@@ -2207,7 +2207,7 @@
   },
   "best": {
     "pos": "形容詞",
-    "meaning": "adj. 好的 /bye / n. 再見",
+    "meaning": "adj. 好的",
     "lemma": "good",
     "scope": "covered",
     "level": 1,
@@ -2229,7 +2229,7 @@
   },
   "better": {
     "pos": "形容詞",
-    "meaning": "adj. 好的 /bye / n. 再見",
+    "meaning": "adj. 好的",
     "lemma": "good",
     "scope": "covered",
     "level": 1,
@@ -9123,7 +9123,7 @@
   },
   "every": {
     "pos": "形容詞",
-    "meaning": "adj. 每個 / n.考試",
+    "meaning": "adj. 每個",
     "lemma": "every",
     "scope": "covered",
     "level": 1,
@@ -10183,24 +10183,24 @@
   },
   "film": {
     "pos": "名詞／其他詞性",
-    "meaning": "n. 電影",
+    "meaning": "cinema n. 電影；n. 電影",
     "lemma": "film",
     "scope": "covered",
-    "level": 2,
+    "level": 1,
     "levelSource": "film",
-    "sourcePage": 15,
-    "sourceEntry": "film",
+    "sourcePage": 6,
+    "sourceEntry": "movie/(motion) picture/film/",
     "matchType": "exact"
   },
   "filmed": {
     "pos": "名詞／其他詞性",
-    "meaning": "n. 電影",
+    "meaning": "cinema n. 電影；n. 電影",
     "lemma": "film",
     "scope": "covered",
-    "level": 2,
+    "level": 1,
     "levelSource": "film",
-    "sourcePage": 15,
-    "sourceEntry": "film",
+    "sourcePage": 6,
+    "sourceEntry": "movie/(motion) picture/film/",
     "matchType": "family",
     "form": "inflection"
   },
@@ -16672,7 +16672,7 @@
   },
   "lucky": {
     "pos": "形容詞",
-    "meaning": "adj. 幸運的 / n. 午餐",
+    "meaning": "adj. 幸運的",
     "lemma": "lucky",
     "scope": "covered",
     "level": 1,
@@ -18076,7 +18076,7 @@
   },
   "move": {
     "pos": "動詞",
-    "meaning": "vi. 動作 cinema n. 電影",
+    "meaning": "vi. 動作",
     "lemma": "move",
     "scope": "covered",
     "level": 1,
@@ -18087,7 +18087,7 @@
   },
   "moved": {
     "pos": "動詞",
-    "meaning": "vi. 動作 cinema n. 電影",
+    "meaning": "vi. 動作",
     "lemma": "move",
     "scope": "covered",
     "level": 1,
@@ -18099,7 +18099,7 @@
   },
   "movement": {
     "pos": "動詞",
-    "meaning": "vi. 動作 cinema n. 電影",
+    "meaning": "vi. 動作",
     "lemma": "movement",
     "scope": "covered",
     "level": 1,
@@ -18110,7 +18110,7 @@
   },
   "movements": {
     "pos": "動詞",
-    "meaning": "vi. 動作 cinema n. 電影",
+    "meaning": "vi. 動作",
     "lemma": "movement",
     "scope": "covered",
     "level": 1,
@@ -18122,7 +18122,7 @@
   },
   "moving": {
     "pos": "動詞",
-    "meaning": "vi. 動作 cinema n. 電影",
+    "meaning": "vi. 動作",
     "lemma": "move",
     "scope": "covered",
     "level": 1,
@@ -19786,7 +19786,7 @@
   },
   "pair": {
     "pos": "名詞／其他詞性",
-    "meaning": "n. 一對 / n. 褲子",
+    "meaning": "n. 一對",
     "lemma": "pair",
     "scope": "covered",
     "level": 1,
@@ -20840,14 +20840,14 @@
     "matchType": "exact"
   },
   "popped": {
-    "pos": "動詞",
-    "meaning": "vt.爆裂 vi.發出砰(或啪)的響聲；a.通俗的，流行的 (popular)",
+    "pos": "名詞／其他詞性",
+    "meaning": "n. 爸爸；vt.爆裂 vi.發出砰(或啪)的響聲；a.通俗的，流行的 (popular)",
     "lemma": "pop",
     "scope": "covered",
-    "level": 3,
+    "level": 1,
     "levelSource": "pop",
-    "sourcePage": 30,
-    "sourceEntry": "pop1",
+    "sourcePage": 3,
+    "sourceEntry": "daddy/dad/papa/pa/pop",
     "matchType": "family",
     "form": "inflection"
   },
