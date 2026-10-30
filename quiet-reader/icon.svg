@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+<title>神經漫遊者 — 神經迴路 N</title>
+<defs>
+<linearGradient id="signal" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#23f7dc"/><stop offset=".52" stop-color="#76f7ff"/><stop offset="1" stop-color="#ff4aaf"/></linearGradient>
+<linearGradient id="night" x2="1" y2="1"><stop stop-color="#15212e"/><stop offset="1" stop-color="#070b14"/></linearGradient>
+</defs>
+<rect x="3" y="3" width="122" height="122" rx="28" fill="url(#night)" stroke="#36515f" stroke-width="2"/>
+<path d="M20 39h12m64 50h12M42 18v12m44 68v12" fill="none" stroke="#426275" stroke-width="3"/>
+<path d="M39 92V37l50 54V36" fill="none" stroke="#21ecd8" stroke-opacity=".13" stroke-width="23" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M39 92V37l50 54V36" fill="none" stroke="url(#signal)" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M39 72H24v18m65-34h15V38" fill="none" stroke="#66dfed" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="24" cy="94" r="4" fill="#23f7dc"/><circle cx="104" cy="34" r="4" fill="#ff4aaf"/>
+<circle cx="39" cy="37" r="4" fill="#d9ffff"/><circle cx="89" cy="91" r="4" fill="#d9ffff"/>
+<path d="M55 109h18" stroke="#ff4aaf" stroke-width="3" stroke-linecap="round"/>
+</svg>
