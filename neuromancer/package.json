@@ -1,9 +1,9 @@
 {
-  "name": "quiet-reader",
+  "name": "neuromancer",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "python3 -m http.server 4173 --bind 127.0.0.1 --directory dist",
+    "start": "python3 -m http.server 4173 --bind 127.0.0.1",
     "test": "node --test tests/content.test.mjs",
     "pretest": "python3 tests/make-fixtures.py"
   }
