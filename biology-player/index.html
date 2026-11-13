@@ -10,7 +10,29 @@ function current(){return lessons[index]}
 function setStatus(s){$('status').textContent=s}
 function seek(t){if(!Number.isFinite(t)||t<0)return;video.currentTime=Math.min(t,Number.isFinite(video.duration)?video.duration:t);updateCaption()}
 function updateCaption(){const t=video.currentTime,cues=current().cues;let lo=0,hi=cues.length-1,found=-1;while(lo<=hi){const m=(lo+hi)>>1;if(cues[m][0]<=t){found=m;lo=m+1}else hi=m-1}while(found>=0&&cues[found][1]<=t)found--;if(found>=0&&cues[found][0]<=t&&t<cues[found][1]){if(active!==found){active=found;$('captionTime').textContent=fmt(cues[found][0]);$('captionText').textContent=cues[found][2]}}else if(active!==-1){active=-1;$('captionTime').textContent=fmt(t);$('captionText').textContent='這段時間沒有字幕。'}}
-function renderResults(){const q=$('search').value.trim().toLocaleLowerCase(),cues=current().cues;const selected=[];for(let i=0;i<cues.length;i++)if(!q||cues[i][2].toLocaleLowerCase().includes(q))selected.push(i);$('count').textContent=q?`找到 ${selected.length} 條，顯示前 ${Math.min(120,selected.length)} 條`:`共 ${cues.length} 條字幕，輸入關鍵字搜尋。先顯示前 120 條。`;const frag=document.createDocumentFragment();for(const i of selected.slice(0,120)){const cue=cues[i],b=document.createElement('button'),time=document.createElement('time'),text=document.createElement('span');time.textContent=fmt(cue[0]);text.textContent=cue[2];b.append(time,text);b.onclick=()=>{seek(cue[0]);video.play().catch(()=>setStatus('已跳到指定字幕，請按播放。'))};frag.append(b)}$('results').replaceChildren(frag)}
+let resultsGeneration=0;
+function renderResults(){
+ const generation=++resultsGeneration,lessonId=current().id,q=$('search').value.trim().toLocaleLowerCase(),cues=current().cues;
+ const selected=[];for(let i=0;i<cues.length;i++)if(!q||cues[i][2].toLocaleLowerCase().includes(q))selected.push(i);
+ const results=$('results'),count=$('count');let cursor=0;
+ results.replaceChildren();results.scrollTop=0;results.setAttribute('aria-busy','true');
+ function progress(){count.textContent=q?`找到 ${selected.length} 條${cursor<selected.length?`，已載入 ${cursor} 條`:'，已全部載入'}`:`共 ${cues.length} 條字幕${cursor<selected.length?`，背景載入中（${cursor}／${selected.length}）`:'，所有時間連結已載入。可搜尋或點時間播放。'}`;}
+ function schedule(){if('requestIdleCallback' in window)requestIdleCallback(batch,{timeout:1000});else setTimeout(()=>batch(null),24);}
+ function batch(deadline){
+  if(generation!==resultsGeneration||current().id!==lessonId)return;
+  const frag=document.createDocumentFragment();let added=0;
+  while(cursor<selected.length&&added<100){
+   if(added>0&&deadline&&!deadline.didTimeout&&deadline.timeRemaining()<3)break;
+   const cue=cues[selected[cursor++]],button=document.createElement('button'),time=document.createElement('time'),text=document.createElement('span');
+   time.textContent=fmt(cue[0]);text.textContent=cue[2];button.append(time,text);
+   button.onclick=()=>{if(current().id!==lessonId)return;seek(cue[0]);video.play().catch(()=>setStatus('已跳到指定字幕，請按播放。'));};
+   frag.append(button);added++;
+  }
+  results.append(frag);progress();
+  if(cursor<selected.length)schedule();else results.setAttribute('aria-busy','false');
+ }
+ progress();schedule();
+}
 function save(){if(video.currentTime>0)storage.set('bio-player-'+current().id,String(video.currentTime))}
 function loadLesson(n){save();index=n;loadToken++;video.pause();$('error').hidden=true;active=-1;$('captionTime').textContent='目前字幕';$('captionText').textContent='按播放開始觀看。';$('search').value='';document.querySelectorAll('[data-lesson]').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===n)));if(objectURL){URL.revokeObjectURL(objectURL);objectURL=null}if(!track)track=video.addTextTrack('subtitles','繁體中文 · 文字校正版','zh-Hant');track.mode='hidden';if(track.cues)for(let i=track.cues.length-1;i>=0;i--)track.removeCue(track.cues[i]);for(const [s,e,text] of current().cues)if(e>s)track.addCue(new VTTCue(s,e,text));track.mode=cc?'showing':'disabled';video.src=current().src;video.load();video.playbackRate=Number($('speed').value);resumeTime=Number(storage.get('bio-player-'+current().id))||0;$('resume').hidden=resumeTime<5;$('resume').textContent='接續 '+fmt(resumeTime);setStatus(`${current().date} · 正在載入影片…`);storage.set('bio-player-lesson',String(n));renderResults();window.dispatchEvent(new CustomEvent("biology:lesson-change"))}
 video.addEventListener('loadedmetadata',()=>{setStatus(`${current().date} · ${fmt(video.duration)} · 可開關繁中字幕`)});video.addEventListener('error',()=>{$('error').hidden=false;setStatus('影片來源載入失敗。字幕仍可搜尋。')});video.addEventListener('timeupdate',()=>{updateCaption();if(Date.now()-lastSaved>5000){save();lastSaved=Date.now()}});video.addEventListener('pause',save);window.addEventListener('pagehide',save);
