@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><title>ASCII Christmas Tree — Faithful Recreation</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#07090e;color:#c9d0d7;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}body{display:flex;justify-content:center}.app{width:100%;max-width:530px;margin:0 auto;padding:8px 7px 24px}.screen{position:relative;border-radius:13px;overflow:hidden;background:#05080e;box-shadow:0 10px 45px #0009;border:1px solid #1e242d}canvas{width:100%;height:auto;display:block;aspect-ratio:792/1064;background:#05080e;touch-action:pan-y}.control{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:12px 4px 9px}.control button{font:inherit;border:1px solid #354047;color:#d5dbe2;background:#141b23;border-radius:8px;min-height:36px;padding:0 12px;cursor:pointer}.control button.primary{background:#ddae57;color:#202020;font-weight:800;border-color:#ddae57}.control button.selected{border-color:#a77a42;color:#f3c77e}.control .group{display:flex;gap:6px}.progress{padding:0 4px}.progress .meta{display:flex;justify-content:space-between;font-size:11px;color:#909ea7;margin-bottom:5px}input[type=range]{width:100%;accent-color:#dfaf60;cursor:pointer;touch-action:pan-y}.more{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:9px 4px 0}.more span{font-size:10px;color:#87919c}.speeds{display:flex;gap:6px}.speeds button{font:inherit;font-size:10px;padding:7px 10px;border:1px solid #303943;border-radius:6px;color:#b5c0c8;background:#111720;cursor:pointer}.speeds button.selected{color:#ebc484;border-color:#be8e53}.title{margin:0 4px 8px;font-size:10px;letter-spacing:2px;color:#b38c58;display:flex;justify-content:space-between}.desc{margin:12px 4px 0;font-size:10px;line-height:1.7;color:#8998a2}@media(min-width:640px){.app{padding-top:18px}}
+</style></head><body><div class="app" id="christmas-app"><div class="title"><span>ASCII CHRISTMAS TREE · 2026</span><span>RECREATION V2</span></div><div class="screen"><canvas id="scene" width="792" height="1064" aria-label="動態 ASCII 聖誕樹，金色螺旋緞帶、球飾、禮物、雪花與旋轉效果"></canvas></div><div class="control"><div class="group"><button id="play" class="primary" type="button">Ⅱ 暫停</button><button id="restart" type="button">↻ 重播</button></div><div class="group"><button id="rotation" class="selected" type="button">旋轉 開</button><button id="snow" class="selected" type="button">雪花 開</button></div></div><div class="progress"><div class="meta"><span>ANIMATION TIMELINE</span><span id="time">00:00 / 00:20</span></div><input id="seek" aria-label="動畫進度" type="range" value="0" min="0" max="20" step="0.05"></div><div class="more"><span>滑動畫面可手動改變觀看角度</span><div class="speeds"><button data-speed="0.5">0.5×</button><button data-speed="1" class="selected">1×</button><button data-speed="2">2×</button></div></div><div class="desc">重建自錄影中的字元點雲、枝葉、雪花、螺旋緞帶、球飾和禮物生成順序。Canvas 2D 繪製，無 WebGL。</div></div>
+<script>
+(()=>{
+'use strict';
+const el=document.getElementById('christmas-app'),can=el.querySelector('#scene'),ctx=can.getContext('2d',{alpha:false});
+const W=792,H=1064,COLS=88,ROWS=74,CW=9,CH=14,N=COLS*ROWS,CX=380,GROUND=792,TREE_H=627,SCALE=263,PI=Math.PI,TAU=2*PI;
+const lerp=(a,b,u)=>a+(b-a)*u,clamp=(a,b=0,c=1)=>Math.max(b,Math.min(c,a)),smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
+let seed=7;function rnd(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}const r=(a,b)=>lerp(a,b,rnd());const choose=a=>a[Math.floor(rnd()*a.length)];
+const green=['#18573b','#236b46','#258d5a','#2a9e69','#30aa75','#36b781','#44c38c','#50b98b','#2d9869','#25815c','#66caa0','#1a6348'];
+const gold=['#715122','#97732e','#ae8339','#c39641','#d2a14c','#e2b756','#f5d97e','#ffe2a1','#fff2cf'];
+const reds=['#5e1b27','#8e292d','#b7313e','#d5474b','#e6605c','#f38a70'];
+const blues=['#172967','#2745a3','#3157c5','#3e6be8','#79a1ff'];
+const whites=['#828d8c','#b6c5c9','#d5dcd6','#f0e8d6','#fff4de'];
+const teal=['#165a51','#16887f','#27a99d','#50cfc0','#9ce4cd'];
+const warm=['#ad6a32','#d68c47','#f8bd71','#fff0b6'];
+const COLORS=['#000000',...green,...gold,...reds,...blues,...whites,...teal,...warm,'#26383c','#425259','#67787b','#978d6c','#a6abb3','#eae8ee'];
+const gi=n=>1+clamp(n,0,green.length-1)|0;
+const g0=1,g1=g0+green.length,red0=g1+gold.length,blue0=red0+reds.length,white0=blue0+blues.length,teal0=white0+whites.length,warm0=teal0+teal.length,extra0=warm0+warm.length;
+const chs=' VvWwXxYy%#oO0*+=/-~^@&:$!;.,<>|\\_[](){}';
+const CHARS=[...new Set(chs.split(''))];
+const charID={};CHARS.forEach((c,i)=>charID[c]=i);
+const glyph=(c)=>charID[c]??charID['+'];
+const GRAY=extra0+2;
+const atlas=document.createElement('canvas');atlas.width=CHARS.length*CW;atlas.height=COLORS.length*CH;
+const aCtx=atlas.getContext('2d');aCtx.textAlign='left';aCtx.textBaseline='top';aCtx.font='bold 15px Consolas,Menlo,monospace';
+COLORS.forEach((c,ci)=>{aCtx.fillStyle=c;CHARS.forEach((ch,k)=>{if(ch!==' ')aCtx.fillText(ch,k*CW,ci*CH-1)})});
+const points=[],bg=[],groundStars=[];
+function add(x,y,z,c,color,t=0,kind=0,bias=0){points.push({x,y,z,ch:glyph(c),col:color,t,kind,bias})}
+function envelope(h){return 1.075*Math.pow(Math.max(0,1-h),.94)}
+// Radial needles: 24 whorls, drooping 3D branches, with increasingly dense branch tips.
+const tips=[];
+for(let j=0;j<24;j++){
+ const h=.055+j/23*.88,R=envelope(h)+.045,nb=Math.round(18-11*h);
+ for(let b=0;b<nb;b++){
+  const ang=TAU*(b+.5*rnd())/nb+j*.77;
+  const length=R*r(.86,1.11),count=Math.floor(30+115*length);
+  const dx=Math.cos(ang),dz=Math.sin(ang),sideX=-dz,sideZ=dx;
+  for(let k=0;k<count;k++){
+   const s=Math.pow(rnd(),.65),L=s*length,spread=r(-1,1)*(.018+.072*s),yy=Math.max(.025+r(0,.014),h+.048*L-.145*L*L+r(-.018,.018));
+   const x=dx*L+sideX*spread,z=dz*L+sideZ*spread;
+   let pal=g0+Math.floor(rnd()*green.length);
+   if(s>.54&&rnd()<.05*s)pal=white0+Math.floor(rnd()*3)+1;
+   const txt=choose(['V','V','v','X','X','x','w','W','Y','%','#','o','O','+']);
+   const when=.52+clamp(yy)*6.25+r(-.22,.22);
+   add(x,yy,z,txt,pal,when,0,0);
+   if(k%14===0&&s>.6)tips.push([x,yy,z]);
+  }
+ }
+}
+// An inner dark cone prevents holes through foliage and provides visual depth.
+for(let j=0;j<7700;j++){
+ const y=r(.04,.93),phi=r(0,TAU),rr=envelope(y)*Math.sqrt(rnd())*.73;
+ add(Math.cos(phi)*rr,y,Math.sin(phi)*rr,choose(['v','V','X','w','#','x']),g0+Math.floor(r(0,4)),.50+y*6.2+r(-.15,.19),0,-.17);
+}
+// A narrow trunk appears among the lowest branches.
+for(let j=0;j<1300;j++){
+ const y=r(-.10,.27),a=r(0,TAU),rr=r(.045,.083),co=rnd();
+ add(Math.cos(a)*rr,y,Math.sin(a)*rr,choose(['#','x','%','|']),co<.4?g0:extra0+3,.52+y*6.2,0,-.18);
+}
+// 3.6 turns of gold tinsel, just outside the tree surface.
+const TINSEL_START=6.1,TINSEL_END=8.3;
+for(let i=0;i<2700;i++){
+ const u=i/2699,y=.13+(.88-.13)*u,a=TAU*3.6*u+.9;
+ const swag=-.019*Math.abs(Math.sin(a*2.5)),R=envelope(y)+.052;
+ for(let j=0;j<2;j++){
+  let x=Math.cos(a)*(R+r(-.019,.019)),z=Math.sin(a)*(R+r(-.019,.019));
+  let col=g1+Math.floor(r(1,gold.length));
+  let c=choose(['#','#','#','=','+','%','@','o','-']);
+  add(x,y+swag+r(-.013,.013),z,c,col,lerp(TINSEL_START,TINSEL_END,u)+r(-.25,.22),1,.09);
+ }
+}
+// Richly filled spherical baubles, alternating red and gold.
+const goldenAngle=2.3999632297;
+for(let k=0;k<24;k++){
+ const u=(k+rnd())/24,y=.095+u*.78,a=k*goldenAngle+r(-.2,.2),rad=.041+.025*(1-u),rr=envelope(y)+.045;
+ const ox=Math.cos(a)*rr,oz=Math.sin(a)*rr;
+ for(let j=0;j<65;j++){
+  const z=r(-1,1),th=r(0,TAU),R=Math.sqrt(1-z*z),xx=R*Math.cos(th),zz=R*Math.sin(th);
+  const col=k%2===0?red0+Math.floor(r(1,reds.length)):g1+Math.floor(r(3,gold.length));
+  add(ox+xx*rad,y+z*rad,oz+zz*rad,choose(['O','o','0','#','%']),col,8.5+u*2+r(-.45,.4),2,.15);
+ }
+}
+// Fairy lights distributed over the branches, always in front of a small halo.
+for(let k=0;k<Math.min(178,tips.length);k++){
+ const tp=tips[Math.floor(rnd()*tips.length)],t=7.6+r(0,3.6),bright=rnd()<.75;
+ for(let j=0;j<18;j++){
+  const zz=r(-1,1),th=r(0,TAU),q=Math.sqrt(1-zz*zz),rad=.022;
+  add(tp[0]+q*Math.cos(th)*rad,tp[1]+zz*rad,tp[2]+q*Math.sin(th)*rad,choose(['+','*','o','#']),bright?white0+Math.floor(r(2,whites.length)):warm0+Math.floor(r(1,warm.length)),t+r(-.3,.2),3,.20);
+ }
+}
+// Many distant glints and gently falling snow particles.
+for(let i=0;i<730;i++){
+ const x=r(0,COLS),y=r(0,ROWS),v=r(.035,.24),phase=r(0,TAU);
+ bg.push({x,y,v,phase,ch:choose(['+','+','+','*','.','·']),c:choose(['#aeb7bb','#b4b7c4','#74818c','#cbd0d4']),a:r(.42,1),size:r(.84,1.3)});
+}
+for(let y=38;y<72;y++)for(let x=0;x<COLS;x++)if(rnd()<.52){
+ groundStars.push({x,y,ch:choose(['.','.','+','-','·']),a:r(.10,.24)})
+}
+const sparkle=[];
+for(let i=0;i<110;i++)sparkle.push({x:r(0,COLS),y:r(0,ROWS),p:r(0,TAU),c:choose(['+','*','·','.'])});
+const star=[];
+function inStar(x,y){
+ let found=false,points=[];for(let k=0;k<10;k++){let a=-PI/2+k*PI/5,rr=k%2===0?1:.44;points.push([rr*Math.cos(a),rr*Math.sin(a)])}
+ for(let i=0,j=9;i<10;j=i++){const a=points[i],b=points[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])found=!found}return found;
+}
+for(let y=-1;y<=1.03;y+=.12)for(let x=-1;x<=1.03;x+=.12)if(inStar(x,y)&&rnd()>.12)star.push({x,y,p:rnd()});
+const bufChar=new Int16Array(N),bufColor=new Int16Array(N),depth=new Float32Array(N),buffers=new Float32Array(N);
+function clear(){bufChar.fill(-1);depth.fill(-999);buffers.fill(0)}
+function setCell(col,row,ch,color,d,prio=0){
+ if(col<0||col>=COLS||row<0||row>=ROWS)return;
+ const id=row*COLS+col,weight=d+prio;
+ if(weight<=depth[id])return;
+ depth[id]=weight;bufChar[id]=ch;bufColor[id]=color;buffers[id]=prio;
+}
+function scene3d(t,angle){
+ const si=Math.sin(angle),co=Math.cos(angle);
+ for(let i=0;i<points.length;i++){
+  const p=points[i];if(p.t>t)continue;
+  const X=p.x*co-p.z*si,Z=p.x*si+p.z*co;
+  const x=CX+SCALE*X,y=GROUND-TREE_H*p.y+Z*18;
+  const col=Math.round(x/CW),row=Math.round(y/CH);
+  // White, slightly ragged frontier of branches while their tips are forming.
+  let idx=p.col,ch=p.ch;
+  if(p.kind===0&&p.t>t-.37){idx=white0+3;ch=glyph('#')}
+  setCell(col,row,ch,idx,Z*2+p.bias,p.kind===1?.31:0);
+ }
+}
+function drawGlyph(ch,col,row,pal,alpha=1){
+ const index=typeof ch==='number'?ch:glyph(ch);
+ ctx.globalAlpha=alpha;
+ ctx.drawImage(atlas,index*CW,pal*CH,CW,CH,col*CW,row*CH,CW,CH);
+ ctx.globalAlpha=1;
+}
+function drawBackground(t){
+ ctx.fillStyle='#04070d';ctx.fillRect(0,0,W,H);
+ const grad=ctx.createRadialGradient(CX,505,50,CX,505,750);
+ grad.addColorStop(0,'#0b1218');grad.addColorStop(.67,'#070c13');grad.addColorStop(1,'#03060b');ctx.fillStyle=grad;ctx.fillRect(0,0,W,1036);
+ for(const s of groundStars){drawTextRaw(s.ch,s.x*CW,s.y*CH,'#53606e',11,s.a)}
+ if(!state.snow)return;
+ for(const p of bg){
+  const xx=(p.x+Math.sin(t*.48+p.phase)*.42+COLS)%COLS;
+  const yy=((p.y+t*p.v*2.6)%ROWS+ROWS)%ROWS;
+  const tw=.55+.45*Math.sin(t*(.6+p.v*2)+p.phase);
+  drawTextRaw(p.ch,xx*CW,yy*CH,p.c,12*p.size,p.a*(.68+.32*tw));
+ }
+}
+function drawTextRaw(ch,x,y,color,size,alpha){ctx.globalAlpha=alpha;ctx.font=`${size}px Consolas,Menlo,monospace`;ctx.textBaseline='top';ctx.fillStyle=color;ctx.fillText(ch,x,y);ctx.globalAlpha=1}
+// Gift silhouettes are reconstructed from the screen recording itself. Their
+// individual screen paths deliberately stay close to the original composition.
+const giftSprites=[
+ {name:'blue',x:98,y:775,w:84,h:96,body:blue0,rib:g1+7,start:12.2,peak:15.1,end:21,shift:7,phase:.9},
+ {name:'red-left',x:205,y:789,w:128,h:115,body:red0,rib:g1+7,start:11.5,peak:13.4,end:16.3,shift:-13,phase:1.5},
+ {name:'white',x:462,y:791,w:100,h:104,body:white0,rib:red0+4,start:9.4,peak:11.2,end:13.9,shift:-12,phase:2.7},
+ {name:'center-red',x:471,y:807,w:73,h:98,body:red0,rib:g1+7,start:12.6,peak:15.5,end:21,shift:-12,phase:2.1},
+ {name:'right-green',x:691,y:759,w:91,h:95,body:teal0,rib:red0+4,start:12.4,peak:14.2,end:16.2,shift:5,phase:3.2},
+ {name:'right-red',x:691,y:770,w:64,h:88,body:red0,rib:white0+4,start:10.5,peak:16.5,end:21,shift:8,phase:5.2},
+];
+function pseudo(i,j,seed){let n=Math.sin(i*127.1+j*311.7+seed*19.43)*43758.5453;return n-Math.floor(n)}
+function drawGifts(t,angle){
+ for(const b of giftSprites){
+  const appear=smooth((t-b.start)/1.15),vanish=1-smooth((t-b.end+.9-b.peak)/(b.end+.9-b.peak))*(t>b.peak?smooth((t-b.peak)/(b.end-b.peak)):0);
+  let fade=appear*(t>b.peak?1-smooth((t-b.peak)/(b.end-b.peak)):1);
+  if(b.end>=21)fade=appear;
+  if(fade<.025)continue;
+  const x=b.x+Math.sin(angle*.65+b.phase)*b.shift;
+  const y=b.y+Math.cos(angle*.75+b.phase)*7;
+  const startC=Math.round((x-b.w*.5)/CW),endC=Math.round((x+b.w*.5)/CW),startR=Math.round((y-b.h*.5)/CH),endR=Math.round((y+b.h*.5)/CH);
+  for(let row=startR;row<=endR;row++)for(let col=startC;col<=endC;col++){
+   const xx=(col*CW-x)/b.w, yy=(row*CH-y)/b.h;
+   if(Math.abs(xx)>.51||Math.abs(yy)>.52)continue;
+   const rnd=pseudo(col,row,b.phase),vertical=Math.abs(xx)<.10, horizontal=Math.abs(yy+.29)<.055;
+   const bow=yy<-.32&&Math.abs(xx)<.2;
+   const ribbon=vertical||horizontal||bow;
+   let c=b.body;
+   if(ribbon)c=b.rib;
+   else if(b.name==='blue')c=blue0+Math.floor(1+4*rnd);
+   else if(b.name==='white')c=white0+Math.floor(2+3*rnd);
+   else if(b.name.includes('green'))c=teal0+Math.floor(1+4*rnd);
+   else c=red0+Math.floor(1+4*rnd);
+   if(!ribbon&&rnd<.06)continue;
+   if(ribbon&&rnd>.72)c=Math.min(c+1,COLORS.length-1);
+   drawGlyph(glyph(ribbon?(rnd>.3?'#':'X'):(rnd>.7?'%':rnd>.45?'X':'#')),col,row,c,fade*(.83+.17*rnd));
+  }
+  for(let k=-2;k<=2;k++){
+    const co=Math.round(x/CW)+k,row=Math.round((y-b.h/2-7-Math.abs(k)*1.2)/CH);
+    if(row>=0&&row<ROWS&&co>=0&&co<COLS)drawGlyph('#',co,row,b.rib,fade*.8);
+  }
+ }
+}
+function drawStar(t){
+ const strength=smooth((t-11.6)/1.8);if(strength<=0)return;
+ const sx=CX,sy=184;
+ const halo=ctx.createRadialGradient(sx,sy,3,sx,sy,78);
+ halo.addColorStop(0,`rgba(250,191,64,${.20*strength})`);
+ halo.addColorStop(.4,`rgba(239,166,61,${.065*strength})`);
+ halo.addColorStop(1,'rgba(200,120,40,0)');ctx.fillStyle=halo;ctx.fillRect(sx-85,sy-85,170,170);
+ const rad=42;
+ for(let j=0;j<star.length;j++){
+  const p=star[j];let c=g1+Math.floor(r(0,1));
+  c= p.p>.75?g1+8:p.p>.4?g1+6:g1+4;
+  const x=sx+p.x*rad,y=sy+p.y*rad;
+  drawGlyph(choose(['#','%','+','@']),Math.round(x/CW),Math.round(y/CH),c,strength*(.82+.18*Math.sin(j+t*5)));
+ }
+ if(t<14.7){
+   const burst=clamp((14.7-t)/2.3);
+   for(let k=0;k<8;k++){
+    const a=k*TAU/8+t*.12,reach=lerp(43,98,burst);
+    for(let n=1;n<10;n++){
+     const rr=reach*n/11,x=sx+Math.cos(a)*rr,y=sy+Math.sin(a)*rr;
+     drawTextRaw(choose(['+','.','-']),x,y,'#ffe6a3',12,strength*burst*(1-n/11)*.6);
+    }
+   }
+ }
+}
+function hud(t,angle){
+ ctx.textAlign='left';
+ drawTextRaw('icminh.ascii_',4,909,'#9ca9b5',14,.84);
+ drawTextRaw('rotation '+((angle/TAU*360)%360).toFixed(1)+'°     lights '+Math.floor(smooth((t-7.4)/3.8)*178),4,936,'#71818f',13,.72);
+ drawTextRaw('letters '+Math.floor(2950+smooth(t/6)*700+smooth((t-7)/7)*249).toLocaleString('en-US'),4,959,'#71818f',13,.67);
+ ctx.fillStyle='#0b1018';ctx.fillRect(0,1034,W,30);
+ ctx.strokeStyle='#25303c';ctx.beginPath();ctx.moveTo(0,1034.5);ctx.lineTo(W,1034.5);ctx.stroke();
+ drawTextRaw('christmas_tree.py',3,1040,'#b7b7c2',14,1);
+ drawTextRaw('●  running  · 30',650,1039,'#cba465',13,1);
+ drawTextRaw('● t '+String(Math.floor(t)).padStart(2,'0')+'.'+Math.floor((t%1)*10)+'s',717,32,'#e7ad5c',14,1);
+}
+function greeting(t){
+ const start=13.15;const a=clamp((t-start)/2.8);const content='M E R R Y  C H R I S T M A S  2 0 2 6';
+ const n=Math.floor(content.length*a),size=13,charwidth=10.8;
+ let x=(W-content.length*charwidth)/2;
+ for(let j=0;j<n;j++){const c=content[j];if(c!==' '){
+  drawTextRaw(c,x,866,["#bb8e55","#c49a6b","#819b81","#b7806c"][j%4],size,.65+.25*Math.sin(t*.9+j))
+ }x+=charwidth}
+}
+let state={t:0,playing:true,rotation:true,snow:true,speed:1,manual:0},previous=0,painted=0,dragging=false,downX=0,downAngle=0;
+function draw(){
+ const t=state.t,ang=state.manual+(state.rotation?t*.32:0);
+ drawBackground(t);clear();scene3d(t,ang);
+ for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+  const i=r*COLS+c;if(bufChar[i]>=0)drawGlyph(bufChar[i],c,r,bufColor[i]);
+ }
+ drawGifts(t,ang);drawStar(t);greeting(t);hud(t,ang);
+}
+function updateUI(){el.querySelector('#time').textContent=`00:${String(Math.floor(state.t)).padStart(2,'0')} / 00:20`;el.querySelector('#seek').value=state.t;el.querySelector('#play').textContent=state.playing?'Ⅱ 暫停':'▶ 播放'}
+function frame(ms){if(!el.isConnected)return;const dt=Math.min((ms-(previous||ms))/1000,.09);previous=ms;
+ if(state.playing){state.t+=dt*state.speed;if(state.t>20)state.t=0}
+ if(ms-painted>35){draw();updateUI();painted=ms}
+ requestAnimationFrame(frame)}
+el.querySelector('#play').addEventListener('click',()=>{state.playing=!state.playing;draw();updateUI()});
+el.querySelector('#restart').addEventListener('click',()=>{state.t=0;state.manual=0;state.playing=true;draw();updateUI()});
+el.querySelector('#rotation').addEventListener('click',ev=>{state.rotation=!state.rotation;ev.currentTarget.classList.toggle('selected',state.rotation);ev.currentTarget.textContent='旋轉 '+(state.rotation?'開':'關');draw()});
+el.querySelector('#snow').addEventListener('click',ev=>{state.snow=!state.snow;ev.currentTarget.classList.toggle('selected',state.snow);ev.currentTarget.textContent='雪花 '+(state.snow?'開':'關');draw()});
+el.querySelector('#seek').addEventListener('input',ev=>{state.t=Number(ev.target.value);draw();updateUI()});
+el.querySelectorAll('[data-speed]').forEach(b=>b.addEventListener('click',()=>{state.speed=Number(b.dataset.speed);el.querySelectorAll('[data-speed]').forEach(x=>x.classList.toggle('selected',x===b))}));
+can.addEventListener('pointerdown',ev=>{dragging=true;downX=ev.clientX;downAngle=state.manual;can.setPointerCapture(ev.pointerId)});
+can.addEventListener('pointermove',ev=>{if(!dragging)return;state.manual=downAngle+(ev.clientX-downX)*.012;draw()});
+can.addEventListener('pointerup',()=>dragging=false);
+can.addEventListener('pointercancel',()=>dragging=false);
+window.__asciiChristmas={state,draw,pointsCount:points.length,seek(t){state.t=t;draw();updateUI()},getText(){return 'points '+points.length}};
+draw();requestAnimationFrame(frame);
+})();
+</script></body></html>
