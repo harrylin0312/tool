@@ -78,7 +78,7 @@
   function render() {
     const id = current().id, lesson = data[id]; if (!lesson) { host.hidden = true; return; } host.hidden = false;
     document.getElementById('study-title').textContent = lesson.date + '｜' + lesson.title;
-    document.getElementById('study-meta').textContent = lesson.groups.reduce((s, g) => s + g.topics.length, 0) + ' 個概念 · 2 張比較表 · 6 題自測';
+    document.getElementById('study-meta').textContent = lesson.groups.reduce((s, g) => s + g.topics.length, 0) + ' 個概念 · ' + lesson.comparisons.length + ' 張比較表 · ' + lesson.quiz.length + ' 題自測';
     mapPanel(id, lesson); tablePanel(lesson); quizPanel(id, lesson); setMode(mode);
   }
   host.querySelectorAll('[data-study-mode]').forEach(tab => {
