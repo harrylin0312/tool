@@ -118,7 +118,7 @@ nav button { border-radius: 999px; min-height: 2.4rem; padding: .35rem .9rem; }
 .event-body { padding: 0; }
 .show { font-size: .875rem; }
 h3 { font-size: clamp(1.35rem, 3vw, 1.75rem); margin: .35rem 0 .9rem; letter-spacing: -.025em; }
-.videos { grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr)); gap: .8rem; }
+.videos { grid-template-columns: repeat(auto-fill, minmax(min(100%, 12.5rem), 1fr)); gap: .8rem; }
 .videos a { border: 0; background: transparent; }
 .video-preview { border-radius: .65rem; background: #e8e0f2; }
 .video-label { padding: .45rem 0 0; }
