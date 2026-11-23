@@ -76,5 +76,55 @@ const events = [
     date: '2026-10-29', dateLabel: '上架', show: 'Dahye 的 YouTube 頻道', channel: '다혜가다했다DAHYE',
     title: 'Love Options (연애의 조건)', note: '四人重新拍攝的 2026 年版舞蹈練習。',
     videos: [['Z-pAsnR3lsM', '舞蹈練習']]
-  }
-];
+  },
+  {
+    date: '2026-11-23', dateLabel: '播出', show: 'JTBC 아침&', channel: 'JTBC News',
+    title: 'Hyeyeon 擔任一日氣象主播', guests: [members[0]],
+    videos: [['tH25Xmh9_dI', '氣象播報']]
+  },
+  {
+    date: '2026-11-20', dateLabel: '上架', show: 'Suit Dance · 수트댄스', channel: '1theK Originals',
+    title: 'Love Options (연애의 조건)',
+    videos: [['FVNI7zBuk-4', '西裝舞蹈表演 4K']]
+  },
+  {
+    date: '2026-11-18', dateLabel: '播出', show: 'Cultwo Show · 두시탈출 컬투쇼', channel: 'SBS Radio 에라오',
+    title: 'U.Ji 演唱〈Let It Go〉', guests: [members[1]],
+    videos: [['aNLz9WgH0PY', '個人演唱片段']]
+  },
+  {
+    date: '2026-11-18', dateLabel: '播出', show: '裴成宰的 TEN · 배성재의 텐', channel: '배성재의 텐 (Bae_ten)',
+    title: 'Hyeyeon、Haeryung 作客《Produce 1077》', guests: [members[0], members[3]],
+    videos: [['IWzNzAvSDsY', '電台訪談']]
+  },
+  {
+    date: '2026-11-13', dateLabel: '上架', show: '차오룸 第 47 集', channel: '차오루',
+    title: 'Dahye、Haeryung 作客曹璐的節目', guests: [members[2], members[3]],
+    videos: [['KR4dvtxslQI', '網路節目']]
+  },
+  {
+    date: '2026-11-10', dateLabel: '播出', show: 'KBS 뉴스라인 W', channel: 'KBS News',
+    title: 'Hyeyeon、Haeryung 談 BESTie 重組', guests: [members[0], members[3]],
+    videos: [['7MC7PacW-7k', '新聞訪談']]
+  },
+  {
+    date: '2026-11-09', dateLabel: '播出', show: 'The Trot Show · 더 트롯쇼', channel: 'THE 트롯 보라고',
+    title: 'Hyeyeon〈믿지못할 남자〉', guests: [members[0]],
+    videos: [['b0hNOJ-5MTg', '個人舞台']]
+  },
+  {
+    date: '2026-10-24', dateLabel: '上架', show: 'Dahye 的 YouTube 頻道', channel: '다혜가다했다DAHYE',
+    title: 'Dahye 的偶像知道她？', guests: [members[2]], note: '최애가 나를 안다고?',
+    videos: [['ILqM8yV40AA', 'Shorts · 0:28']]
+  },
+  {
+    date: '2026-10-22', dateLabel: '上架', show: 'Dahye 的 YouTube 頻道', channel: '다혜가다했다DAHYE',
+    title: 'Dahye「我要應徵 BESTie 主唱」', guests: [members[2]], note: '베스티 메인보컬 지원합니다',
+    videos: [['v3EPVDgBgE8', 'Shorts · 0:19']]
+  },
+  {
+    date: '2026-10-18', dateLabel: '上架', show: 'Dahye 的 Vlog', channel: '다혜가다했다DAHYE',
+    title: 'Dahye 的秋日吃蝦日常', guests: [members[2]], note: '가을철 남들은 결혼할 때, 나는 대하를 먹어...',
+    videos: [['rAs_S8gdwWw', '個人 Vlog · 34:22']]
+  },
+].sort((first, second) => second.date.localeCompare(first.date));

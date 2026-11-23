@@ -3,7 +3,8 @@ const categories = {
   stage: '打歌',
   program: '節目',
   camera: '直拍',
-  behind: '幕後'
+  behind: '幕後',
+  personal: '個人／小分隊'
 };
 const results = document.querySelector('#results');
 const status = document.querySelector('#count');
@@ -17,7 +18,8 @@ function categoryOf(event, format) {
   if (event.dateLabel === '播出' && event.videos[0][1] === '播出舞台') {
     return format === '播出舞台' ? 'stage' : 'camera';
   }
-  return /舞蹈|幕後/.test(format) ? 'behind' : 'program';
+  if (format === '個人舞台') return 'stage';
+  return /舞蹈|幕後|Vlog/.test(format) ? 'behind' : 'program';
 }
 
 function normalize(value) {
@@ -77,10 +79,12 @@ function render() {
 
   for (const event of list) {
     const videos = event.videos.filter(([, format, member]) => {
-      const matchesCategory = selected === 'all' || categoryOf(event, format) === selected;
+      const category = categoryOf(event, format);
+      const matchesCategory = selected === 'all' || category === selected ||
+        (selected === 'personal' && event.guests?.length);
       const metadata = normalize([
         event.date, event.date.slice(2), event.show, event.channel, event.title,
-        event.note, format, member, member && '直拍 fancam', categories[categoryOf(event, format)]
+        event.note, format, member, ...(event.guests || []), member && '直拍 fancam', categories[category]
       ].join(' '));
       return matchesCategory && words.every(word => metadata.includes(word));
     });
