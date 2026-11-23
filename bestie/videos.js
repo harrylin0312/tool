@@ -18,8 +18,8 @@ function musicShow(date, show, channel, stage, angles, note = '打歌舞台') {
 
 const events = [
   {
-    date: '2026-11-22', dateLabel: '上架', show: '多惠的 Vlog', channel: '다혜가다했다DAHYE',
-    title: 'BESTie 第二週打歌幕後', note: '多惠記錄重組後第二週的音樂節目活動。原片名為「어른여자 생활 | 베스티 음방 브이로그」。',
+    date: '2026-11-22', dateLabel: '上架', show: 'Dahye 的 Vlog', channel: '다혜가다했다DAHYE',
+    title: 'BESTie 第二週打歌幕後', note: 'Dahye 記錄重組後第二週的音樂節目活動。原片名為「어른여자 생활 | 베스티 음방 브이로그」。',
     videos: [['o8W6FYVoaBE', '幕後 Vlog · 17:10']]
   },
   musicShow('11-22', '人氣歌謠 · Inkigayo', 'SBSKPOP X INKIGAYO', 'z00UvsqpRVw', [
@@ -60,8 +60,8 @@ const events = [
     videos: [['eYK7YecTeYg', '短訪談']]
   },
   {
-    date: '2026-11-08', dateLabel: '上架', show: '多惠的 Vlog', channel: '다혜가다했다DAHYE',
-    title: '從重聚到打歌的幕後', note: '多惠記錄成員重聚、舞蹈影片拍攝與回歸舞台準備。',
+    date: '2026-11-08', dateLabel: '上架', show: 'Dahye 的 Vlog', channel: '다혜가다했다DAHYE',
+    title: '從重聚到打歌的幕後', note: 'Dahye 記錄成員重聚、舞蹈影片拍攝與回歸舞台準備。',
     videos: [['fU0tybevRVs', '幕後 Vlog']]
   },
   {
@@ -73,7 +73,7 @@ const events = [
     ['ms1xrjx2ehw', '團體全景']
   ], '重組回歸特別舞台'),
   {
-    date: '2026-10-29', dateLabel: '上架', show: '多惠的 YouTube 頻道', channel: '다혜가다했다DAHYE',
+    date: '2026-10-29', dateLabel: '上架', show: 'Dahye 的 YouTube 頻道', channel: '다혜가다했다DAHYE',
     title: 'Love Options (연애의 조건)', note: '四人重新拍攝的 2026 年版舞蹈練習。',
     videos: [['Z-pAsnR3lsM', '舞蹈練習']]
   }

@@ -43,7 +43,7 @@ function createEvent(event, videos) {
     link.rel = 'noopener noreferrer';
     const label = document.createElement('span');
     label.className = 'video-label';
-    label.textContent = member ? member.split(' ').slice(0, 2).join(' ') + ' · ' + format : format;
+    label.textContent = member ? member.split(' ')[1] + ' · ' + format : format;
     link.setAttribute('aria-label', [event.date, event.show, event.title, label.textContent, 'YouTube（新分頁）'].join('，'));
 
     const preview = document.createElement('span');
