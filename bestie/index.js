@@ -40,7 +40,6 @@ function createEvent(event, videos) {
     const link = document.createElement('a');
     link.href = 'https://www.youtube.com/watch?v=' + id;
     link.target = '_blank';
-    if (format === '播出舞台') link.dataset.stage = '';
     link.rel = 'noopener noreferrer';
     const label = document.createElement('span');
     label.className = 'video-label';

@@ -126,17 +126,11 @@ h3 { font-size: clamp(1.35rem, 3vw, 1.75rem); margin: .35rem 0 .9rem; letter-spa
 .videos a:hover .video-preview { box-shadow: 0 0 0 2px var(--accent); }
 @media (min-width: 60rem) {
   .controls { grid-template-columns: 1fr minmax(22rem, 27rem); align-items: end; }
-  .videos:has(> li:first-child:nth-last-child(n+4)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .videos:has(> li:first-child:nth-last-child(n+4)) > li:first-child:has(a[data-stage]) {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
 }
 @media (max-width: 37rem) {
   .wrap { width: min(100% - 2rem, 70rem); }
   .event { grid-template-columns: 1fr; gap: .45rem; padding-block: 1.15rem; }
   .videos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .videos:has(> li:first-child:nth-last-child(n+4)) > li:first-child:has(a[data-stage]) { grid-column: 1 / -1; }
 }
 
 .hero {
