@@ -1,9 +1,9 @@
 const categories = {
   all: '全部',
-  stage: '打歌舞台',
-  program: '節目與訪談',
-  camera: '直拍與全景',
-  behind: '練習與幕後'
+  stage: '打歌',
+  program: '節目',
+  camera: '直拍',
+  behind: '幕後'
 };
 const results = document.querySelector('#results');
 const status = document.querySelector('#count');
@@ -30,9 +30,9 @@ function createEvent(event, videos) {
   date.dateTime = event.date;
   date.textContent = event.date.replaceAll('-', '.');
   fragment.querySelector('.event-date span').textContent = event.dateLabel;
-  fragment.querySelector('.show').textContent = event.show + ' ／ ' + event.channel;
+  fragment.querySelector('.show-name').textContent = event.show;
+  fragment.querySelector('.channel-name').textContent = event.channel;
   fragment.querySelector('h3').textContent = event.title;
-  fragment.querySelector('.note').textContent = event.note;
 
   const list = fragment.querySelector('.videos');
   for (const [id, format, member] of videos) {
@@ -120,8 +120,6 @@ for (const [key, label] of Object.entries(categories)) {
   filters.append(button);
 }
 
-document.querySelector('#period').textContent =
-  events.at(-1).date.replaceAll('-', '.') + ' — ' + events[0].date.replaceAll('-', '.');
 search.addEventListener('input', render);
 order.addEventListener('change', render);
 render();
