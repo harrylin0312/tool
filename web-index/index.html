@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#698f99">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#698f99" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#17292f" media="(prefers-color-scheme: dark)">
   <title>網頁索引</title>
   <link rel="icon" type="image/png" href="../icon_test/icon.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
@@ -89,6 +91,19 @@
     }
     a:hover { background: #edf7f8; }
     :focus-visible { outline: 3px solid #0055ae; outline-offset: -3px; }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e2f3f2; background: #17292f; }
+      header { background: #115559; }
+      details { background: #21383e; border-color: #496d74; }
+      details[open] { border-color: #6fa5a9; }
+      summary:hover, details[open] > summary { background: #2a4a50; }
+      .path, .count { color: #b4cdd0; }
+      .chevron { border-color: #9fd4d4; }
+      li + li, .subproject { border-color: #496d74; }
+      a { color: #a8d5ff; }
+      a:hover { background: #28444e; }
+      :focus-visible { outline-color: #a8d5ff; }
+    }
   </style>
 </head>
 <body>
