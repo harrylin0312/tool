@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="依日期、節目與場次整理 BESTie 2026 年重組後的打歌舞台、訪談、直拍與幕後。">
+  <title>BESTie 影片索引</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="videos.js" defer></script>
+  <script src="index.js" defer></script>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap hero-content">
+      <p class="eyebrow">베스티 <span>／</span> 2026 重組活動</p>
+      <h1>BESTie<span>.</span></h1>
+      <p class="subtitle">舞台與節目影片索引</p>
+      <p class="period" id="period"></p>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="controls">
+      <nav id="filters" aria-label="影片分類"></nav>
+      <div class="fields">
+        <label>搜尋
+          <input id="search" type="search" placeholder="日期、節目、歌名或成員">
+        </label>
+        <label>日期排序
+          <select id="order">
+            <option value="new">新到舊</option>
+            <option value="old">舊到新</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <p id="count" role="status"></p>
+    <div id="results"></div>
+    <noscript>請啟用 JavaScript 以瀏覽影片索引。</noscript>
+    <footer>打歌與電台以播出日為準。網路節目與幕後影片依上架日標示。</footer>
+  </main>
+  <template id="event">
+    <article class="event">
+      <div class="event-date"><time></time><span></span></div>
+      <div class="event-body">
+        <div class="show"></div>
+        <h3></h3>
+        <p class="note"></p>
+        <ul class="videos"></ul>
+      </div>
+    </article>
+  </template>
+</body>
+</html>

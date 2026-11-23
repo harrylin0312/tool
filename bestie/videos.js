@@ -1,0 +1,75 @@
+const members = ['惠妍 Hyeyeon 혜연', '有智 U.Ji 유지', '多惠 Dahye 다혜', '海嶺 Haeryung 해령'];
+
+function cameras(ids, format = '成員直拍') {
+  return ids.map((id, index) => [id, format, members[index]]);
+}
+
+function musicShow(date, show, channel, stage, angles, note = '打歌舞台') {
+  return {
+    date: '2026-' + date,
+    dateLabel: '播出',
+    show,
+    channel,
+    title: 'Love Options (연애의 조건)',
+    note,
+    videos: [[stage, '播出舞台'], ...angles]
+  };
+}
+
+const events = [
+  musicShow('11-22', '人氣歌謠 · Inkigayo', 'SBSKPOP X INKIGAYO', 'z00UvsqpRVw', [
+    ['IcRNaHh4rZI', '團體全景 4K'],
+    ...cameras(['9ssxKwwnDIc', 'zVujYDsf7DM']),
+    ['sWtjZnBaQsM', '臉部特寫', members[2]],
+    ['RS01eGoljUo', '臉部特寫', members[3]]
+  ]),
+  {
+    date: '2026-11-21', dateLabel: '上架', show: '밥묵자', channel: '꼰대희',
+    title: 'BESTie 全員聚餐訪談', note: '四人帶菜赴約，聊歌曲翻紅與重組經過。',
+    videos: [['prw6wJGJroI', '完整節目']]
+  },
+  musicShow('11-20', '音樂銀行 · Music Bank', 'KBS Kpop', 'iVUTvsSFG3A', [
+    ['Ju1Qx03u9hg', '團體一鏡到底 4K'],
+    ...cameras(['EaCY-sXgchI', 'OyrJXMIJIr8', 'NBU7Ej-W1G8', '9NuKa9L4n8g'], '直式直拍'),
+    ...cameras(['B-ePpVCVztc', 'z9HdEMyn3jA', 'mBIajarKjZ8', 'hMkzCr0wP8M'], '臉部特寫')
+  ]),
+  {
+    date: '2026-11-18', dateLabel: '播出', show: '兩點逃出 Cultwo Show · 두시탈출 컬투쇼', channel: 'SBS Radio 에라오',
+    title: '重組後首次電台通告', note: '四人一起受訪，並現場演唱〈Love Options〉。',
+    videos: [['lZVbK5Iz-_A', '完整電台節目'], ['syugNuGvOX8', '電台 Live · Love Options']]
+  },
+  musicShow('11-15', '人氣歌謠 · Inkigayo', 'SBSKPOP X INKIGAYO', 'kBvCCRnp8ZM', [
+    ['s0Fe8Ig8-3E', '團體全景 4K'],
+    ...cameras(['Fr7yEeMph4c', '9x5KwrcaOgQ', 'IihZA29d-QA', 'lP6arYLUMAM'])
+  ], '第 1331 集'),
+  musicShow('11-14', 'Show! 音樂中心 · Music Core', 'MBCkpop', 'yWuDTKE3gUE', [
+    ['pUy86Llo-tk', '團體全景'],
+    ...cameras(['5mx5_Y-lVu0', 'KWCo_DQtx4Q', 'eA0n38xl_3U', '3UyRJ7oUyUI'])
+  ]),
+  musicShow('11-13', '音樂銀行 · Music Bank', 'KBS Kpop', 'InaRJ8kI8qE', [
+    ...cameras(['s70WVtaiMP8', 'DHcLy-kYIeA', 'TNhLxrXPQa4', 'LnqLll2mfYM'])
+  ]),
+  {
+    date: '2026-11-10', dateLabel: '上架', show: '릴레이마이크', channel: '원마이크',
+    title: '回歸舞台後的四人訪談', note: '全員聊〈Love Options〉翻紅與再登上打歌舞台。',
+    videos: [['eYK7YecTeYg', '短訪談']]
+  },
+  {
+    date: '2026-11-08', dateLabel: '上架', show: '多惠的 Vlog', channel: '다혜가다했다DAHYE',
+    title: '從重聚到打歌的幕後', note: '多惠記錄成員重聚、舞蹈影片拍攝與回歸舞台準備。',
+    videos: [['fU0tybevRVs', '幕後 Vlog']]
+  },
+  {
+    date: '2026-11-07', dateLabel: '上架', show: 'Relay Dance · 릴레이댄스', channel: 'M2',
+    title: 'Love Options (연애의 조건)', note: '四人接力舞蹈。',
+    videos: [['L59TW3qY8ug', '接力舞蹈 4K']]
+  },
+  musicShow('10-31', 'Show! 音樂中心 · Music Core', 'MBCkpop', 'o6KvKuSviA0', [
+    ['ms1xrjx2ehw', '團體全景']
+  ], '重組回歸特別舞台'),
+  {
+    date: '2026-10-29', dateLabel: '上架', show: '多惠的 YouTube 頻道', channel: '다혜가다했다DAHYE',
+    title: 'Love Options (연애의 조건)', note: '四人重新拍攝的 2026 年版舞蹈練習。',
+    videos: [['Z-pAsnR3lsM', '舞蹈練習']]
+  }
+];

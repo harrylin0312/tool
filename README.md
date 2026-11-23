@@ -2,6 +2,7 @@
 
 | 目錄 | 內容 |
 | --- | --- |
+| `bestie/` | BESTie 2026 重組活動的打歌、節目、直拍與幕後影片索引。 |
 | `neuromancer/` | 《神經漫遊者》中文閱讀器。 |
 | `neuromancer/english/` | 英文閱讀器，附中文釋義與詞彙級別。 |
 | `gsat_frequency/` | 學測字頻表格。 |
