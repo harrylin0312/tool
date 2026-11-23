@@ -41,8 +41,28 @@ function createEvent(event, videos) {
     link.href = 'https://www.youtube.com/watch?v=' + id;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
-    link.textContent = member ? member.split(' ').slice(0, 2).join(' ') + ' · ' + format : format;
-    link.setAttribute('aria-label', [event.date, event.show, event.title, link.textContent, 'YouTube（新分頁）'].join('，'));
+    const label = document.createElement('span');
+    label.className = 'video-label';
+    label.textContent = member ? member.split(' ').slice(0, 2).join(' ') + ' · ' + format : format;
+    link.setAttribute('aria-label', [event.date, event.show, event.title, label.textContent, 'YouTube（新分頁）'].join('，'));
+
+    const preview = document.createElement('span');
+    preview.className = 'video-preview';
+    const thumbnail = document.createElement('img');
+    const thumbnailBase = 'https://i.ytimg.com/vi/' + id + '/';
+    thumbnail.alt = '';
+    thumbnail.width = 320;
+    thumbnail.height = 180;
+    thumbnail.loading = 'lazy';
+    thumbnail.decoding = 'async';
+    thumbnail.addEventListener('error', () => {
+      thumbnail.addEventListener('error', () => thumbnail.remove(), { once: true });
+      thumbnail.src = thumbnailBase + 'hqdefault.jpg';
+    }, { once: true });
+    thumbnail.src = thumbnailBase + 'mqdefault.jpg';
+    preview.append(thumbnail);
+
+    link.append(preview, label);
     item.append(link);
     list.append(item);
   }

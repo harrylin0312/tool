@@ -17,6 +17,11 @@ function musicShow(date, show, channel, stage, angles, note = '打歌舞台') {
 }
 
 const events = [
+  {
+    date: '2026-11-22', dateLabel: '上架', show: '多惠的 Vlog', channel: '다혜가다했다DAHYE',
+    title: 'BESTie 第二週打歌幕後', note: '多惠記錄重組後第二週的音樂節目活動。原片名為「어른여자 생활 | 베스티 음방 브이로그」。',
+    videos: [['o8W6FYVoaBE', '幕後 Vlog · 17:10']]
+  },
   musicShow('11-22', '人氣歌謠 · Inkigayo', 'SBSKPOP X INKIGAYO', 'z00UvsqpRVw', [
     ['IcRNaHh4rZI', '團體全景 4K'],
     ...cameras(['9ssxKwwnDIc', 'zVujYDsf7DM']),
