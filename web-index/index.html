@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#698f99">
+  <title>網頁索引</title>
+  <link rel="icon" type="image/png" href="../icon_test/icon.png">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: #094244;
+      background: #698f99;
+      font: 1rem/1.55 Arial, "Noto Sans TC", sans-serif;
+    }
+    main { max-width: 52rem; margin: auto; padding: clamp(1rem, 5vw, 3rem); }
+    header {
+      padding: clamp(1.25rem, 4vw, 2rem);
+      text-align: center;
+      margin-bottom: 1.25rem;
+      border-radius: 15px;
+      background: #116f73;
+      box-shadow: 0 4px 8px rgb(0 0 0 / 20%);
+      color: #fff;
+    }
+    h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); line-height: 1.15; margin: 0; }
+    details {
+      margin-bottom: .65rem;
+      border: 1px solid #6aa7b6;
+      border-radius: 15px;
+      overflow: hidden;
+      background: #fff;
+    }
+    details[open] { border-color: #116f73; }
+    summary {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto .65rem;
+      gap: clamp(.65rem, 3vw, 1.25rem);
+      align-items: center;
+      padding: .85rem clamp(.85rem, 3vw, 1.25rem);
+      border-radius: 14px;
+      cursor: pointer;
+      list-style: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary:hover, details[open] > summary { background: #e1f1f3; }
+    .project { font-size: 1.125rem; font-weight: 700; }
+    .path {
+      display: block;
+      color: #3b626a;
+      font: .875rem/1.5 ui-monospace, monospace;
+      overflow-wrap: anywhere;
+    }
+    .count { font-size: .875rem; color: #3b626a; }
+    .chevron {
+      width: .55rem;
+      height: .55rem;
+      border: solid #116f73;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+      transition: transform 220ms ease;
+    }
+    details[open]:not(.closing) > summary > .chevron { transform: rotate(225deg); }
+    @media (prefers-reduced-motion: reduce) {
+      .chevron { transition: none; }
+    }
+    ul { margin: 0; padding: .35rem .9rem; list-style: none; }
+    li + li { border-top: 1px solid #cee2e6; }
+    .subproject {
+      margin: .4rem 0;
+      border-color: #cee2e6;
+      border-radius: .65rem;
+    }
+    .subproject > summary {
+      padding: .6rem .7rem;
+      border-radius: .6rem;
+      font-weight: 700;
+    }
+    .subproject > ul { padding-left: 1.25rem; }
+    a {
+      display: block;
+      padding: .65rem .4rem;
+      color: #0055ae;
+      border-radius: .55rem;
+      text-decoration-thickness: 1px;
+      text-underline-offset: .2em;
+    }
+    a:hover { background: #edf7f8; }
+    :focus-visible { outline: 3px solid #0055ae; outline-offset: -3px; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>網頁索引</h1>
+    </header>
+    <details>
+      <summary>
+        <span class="project">每日快報<span class="path">/daily_brief/</span></span>
+        <span class="count">1 個入口</span>
+        <span class="chevron" aria-hidden="true"></span>
+      </summary>
+      <ul>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/daily_brief/">每日快報</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>
+        <span class="project">工具<span class="path">/tool/</span></span>
+        <span class="count">7 個入口</span>
+        <span class="chevron" aria-hidden="true"></span>
+      </summary>
+      <ul>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/tool/bestie/">BESTie 影片索引</a></li>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/tool/christmas-2026/">ASCII 聖誕樹</a></li>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/tool/gsat_frequency/">學測頻率表</a></li>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/tool/icon_test/">圖示測試</a></li>
+          <li>
+            <details class="subproject">
+              <summary>
+                <span>《神經漫遊者》閱讀器</span>
+                <span class="count">2 個入口</span>
+                <span class="chevron" aria-hidden="true"></span>
+              </summary>
+              <ul>
+                <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/tool/neuromancer/">中文閱讀器</a></li>
+                <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/tool/neuromancer-en/">英文閱讀器</a></li>
+              </ul>
+            </details>
+          </li>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/tool/status-button/">狀態按鈕</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>
+        <span class="project">臨時網頁<span class="path">/tmp_pages/</span></span>
+        <span class="count">2 個入口</span>
+        <span class="chevron" aria-hidden="true"></span>
+      </summary>
+      <ul>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/tmp_pages/bestie/">BESTie 字幕</a></li>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/tmp_pages/biology-player/">生物課程播放器</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>
+        <span class="project">專題介紹<span class="path">/introduction/</span></span>
+        <span class="count">1 個入口</span>
+        <span class="chevron" aria-hidden="true"></span>
+      </summary>
+      <ul>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/introduction/">技術架構介紹</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>
+        <span class="project">人臉辨識<span class="path">/face-recognition/</span></span>
+        <span class="count">1 個入口</span>
+        <span class="chevron" aria-hidden="true"></span>
+      </summary>
+      <ul>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/face-recognition/cover/">人臉辨識活動簽到</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>
+        <span class="project">表單<span class="path">/Form/</span></span>
+        <span class="count">2 個入口</span>
+        <span class="chevron" aria-hidden="true"></span>
+      </summary>
+      <ul>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/Form/GSAT/">學測表單</a></li>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/Form/TransportMode/">交通方式表單</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>
+        <span class="project">APEX 賽車<span class="path">/apex_formula/</span></span>
+        <span class="count">1 個入口</span>
+        <span class="chevron" aria-hidden="true"></span>
+      </summary>
+      <ul>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/apex_formula/">APEX 賽車</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>
+        <span class="project">生物視界<span class="path">/bio_motion/</span></span>
+        <span class="count">1 個入口</span>
+        <span class="chevron" aria-hidden="true"></span>
+      </summary>
+      <ul>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/bio_motion/">生物視界｜光合作用互動實驗室</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>
+        <span class="project">天球模型<span class="path">/celestial_sphere/</span></span>
+        <span class="count">1 個入口</span>
+        <span class="chevron" aria-hidden="true"></span>
+      </summary>
+      <ul>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/celestial_sphere/">天球模型</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>
+        <span class="project">SQL Lab<span class="path">/sql_lab/</span></span>
+        <span class="count">1 個入口</span>
+        <span class="chevron" aria-hidden="true"></span>
+      </summary>
+      <ul>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/sql_lab/">極光 SQL 調查站</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>
+        <span class="project">簡報工具<span class="path">/my_presentation/</span></span>
+        <span class="count">1 個入口</span>
+        <span class="chevron" aria-hidden="true"></span>
+      </summary>
+      <ul>
+          <li><a target="_blank" rel="noopener" href="https://harrylin0312.github.io/my_presentation/camera/camera.html">Camera Setting</a></li>
+      </ul>
+    </details>
+  </main>
+  <script>
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    for (const panel of document.querySelectorAll('details')) {
+      const summary = panel.querySelector('summary');
+      let animation;
+
+      summary.addEventListener('click', (event) => {
+        if (event.defaultPrevented || typeof panel.animate !== 'function') return;
+
+        const willOpen = !panel.open || panel.classList.contains('closing');
+        if (reduceMotion.matches && !animation) return;
+
+        event.preventDefault();
+        const from = panel.getBoundingClientRect().height;
+        animation?.cancel();
+        animation = undefined;
+        panel.classList.toggle('closing', !willOpen);
+
+        if (reduceMotion.matches) {
+          panel.open = willOpen;
+          panel.classList.remove('closing');
+          return;
+        }
+
+        // Measure both endpoints in pixels so the animation also works in Safari.
+        panel.open = willOpen;
+        const to = panel.getBoundingClientRect().height;
+        panel.open = true;
+
+        animation = panel.animate(
+          [{ height: from + 'px' }, { height: to + 'px' }],
+          { duration: 240, easing: 'ease' }
+        );
+        animation.onfinish = () => {
+          panel.open = willOpen;
+          panel.classList.remove('closing');
+          animation = undefined;
+        };
+      });
+    }
+  </script>
+</body>
+</html>
