@@ -1,6 +1,6 @@
 # 靜讀・英文 Quiet Reader English
 
-閱讀網址：https://harrylin0312.github.io/tool/neuromancer/english/
+閱讀網址：https://harrylin0312.github.io/tool/%E7%B6%93%E6%BC%AB%E9%81%8A%E8%80%85%E8%8B%B1%E6%96%87%E7%89%88/
 
 已完成全書 **24 章（含 Coda）及作者致謝**，涵蓋提供的英文 PDF 第 3–266 頁。沿用 quiet-reader 版面與閱讀功能，加入逐字繁體中文解釋與大考 Level。全部資料離線預載。
 
