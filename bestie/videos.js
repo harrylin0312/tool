@@ -88,11 +88,6 @@ const events = [
     videos: [['FVNI7zBuk-4', '西裝舞蹈表演 4K']]
   },
   {
-    date: '2026-11-18', dateLabel: '播出', show: 'Cultwo Show · 두시탈출 컬투쇼', channel: 'SBS Radio 에라오',
-    title: 'U.Ji 演唱〈Let It Go〉', guests: [members[1]],
-    videos: [['aNLz9WgH0PY', '個人演唱片段']]
-  },
-  {
     date: '2026-11-18', dateLabel: '播出', show: '裴成宰的 TEN · 배성재의 텐', channel: '배성재의 텐 (Bae_ten)',
     title: 'Hyeyeon、Haeryung 作客《Produce 1077》', guests: [members[0], members[3]],
     videos: [['IWzNzAvSDsY', '電台訪談']]
@@ -111,16 +106,6 @@ const events = [
     date: '2026-11-09', dateLabel: '播出', show: 'The Trot Show · 더 트롯쇼', channel: 'THE 트롯 보라고',
     title: 'Hyeyeon〈믿지못할 남자〉', guests: [members[0]],
     videos: [['b0hNOJ-5MTg', '個人舞台']]
-  },
-  {
-    date: '2026-10-24', dateLabel: '上架', show: 'Dahye 的 YouTube 頻道', channel: '다혜가다했다DAHYE',
-    title: 'Dahye 的偶像知道她？', guests: [members[2]], note: '최애가 나를 안다고?',
-    videos: [['ILqM8yV40AA', 'Shorts · 0:28']]
-  },
-  {
-    date: '2026-10-22', dateLabel: '上架', show: 'Dahye 的 YouTube 頻道', channel: '다혜가다했다DAHYE',
-    title: 'Dahye「我要應徵 BESTie 主唱」', guests: [members[2]], note: '베스티 메인보컬 지원합니다',
-    videos: [['v3EPVDgBgE8', 'Shorts · 0:19']]
   },
   {
     date: '2026-10-18', dateLabel: '上架', show: 'Dahye 的 Vlog', channel: '다혜가다했다DAHYE',
