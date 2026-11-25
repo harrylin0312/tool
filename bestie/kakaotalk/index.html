@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KakaoTalk 韓中對照閱讀器</title>
+<style>
+:root{color-scheme:dark;font:16px/1.5 system-ui,sans-serif;background:#161a21;color:#f0f3fa}
+*{box-sizing:border-box}body{margin:0}main{max-width:1050px;margin:auto;padding:16px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+h1{font-size:1.25rem;margin:0}p{color:#c7d0de}input{max-width:100%}
+input::file-selector-button{padding:8px 12px;border:0;border-radius:8px;background:#b4d5ff;color:#152339;font:inherit;cursor:pointer}
+iframe{width:100%;height:calc(100dvh - 135px);min-height:330px;border:1px solid #414c60;border-radius:12px}
+@media(max-width:600px){main{padding:10px}iframe{height:calc(100dvh - 175px)}}
+</style>
+</head>
+<body><main>
+<header><h1>KakaoTalk 韓中對照</h1><label>開啟快照 <input id="file" type="file" accept=".html,.htm,text/html"></label></header>
+<p id="status" role="status">選取已下載的 KakaoTalk-bilingual.html。檔案只在這台裝置讀取。</p>
+<iframe id="reader" title="聊天室韓中對照" sandbox hidden></iframe>
+</main>
+<script>
+const picker = document.querySelector('#file');
+const reader = document.querySelector('#reader');
+const status = document.querySelector('#status');
+let currentUrl;
+let selection = 0;
+picker.addEventListener('change', async () => {
+  const file = picker.files[0];
+  if (!file) return;
+  const request = ++selection;
+  try {
+    const source = await file.text();
+    if (request !== selection) return;
+    if (!/<title>KakaoTalk 韓中對照<\/title>/i.test(source)) {
+      throw new Error('請選取 KakaoTalk 韓中對照 HTML。');
+    }
+    const doc = new DOMParser().parseFromString(source, 'text/html');
+    doc.querySelectorAll('base, meta[http-equiv], script, iframe, object, embed, link').forEach(node => node.remove());
+    doc.querySelectorAll('a[href]').forEach(link => {
+      if (!/^#[\w-]+$/.test(link.getAttribute('href'))) link.removeAttribute('href');
+    });
+    const policy = doc.createElement('meta');
+    policy.httpEquiv = 'Content-Security-Policy';
+    policy.content = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; form-action 'none'; base-uri 'none'";
+    doc.head.prepend(policy);
+    if (currentUrl) URL.revokeObjectURL(currentUrl);
+    currentUrl = URL.createObjectURL(new Blob(['<!doctype html>', doc.documentElement.outerHTML], {type:'text/html;charset=utf-8'}));
+    reader.src = currentUrl;
+    reader.hidden = false;
+    status.textContent = file.name + ' · 已載入本機快照';
+  } catch (error) {
+    if (request === selection) status.textContent = error.message || '讀取失敗，請重新選取檔案。';
+  }
+});
+</script>
+</body>
+</html>
