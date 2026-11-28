@@ -60,7 +60,7 @@ def file_state(directory):
     return out
 
 
-def seal(directory, generation, *, origin_token=None):
+def seal(directory, generation, *, origin_token=None, sign=None):
     directory = clean_directory(directory)
     if not generation.strip():
         raise SourceError("Source generation must be nonempty")
@@ -68,10 +68,15 @@ def seal(directory, generation, *, origin_token=None):
     files = {name: digest(directory / name) for name in before}
     if file_state(directory) != before:
         raise SourceError("Snapshot changed during sealing")
-    manifest = directory / "snapshot.json"
-    fd = os.open(manifest, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    manifest = {"version": 1, "generation": generation, "captured_ns": time.time_ns(),
+                "origin_token": origin_token, "sha256": files}
+    if sign:
+        manifest["receipt"] = sign(manifest)
+    fd = os.open(directory / "snapshot.json", os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     with os.fdopen(fd, "w") as handle:
-        json.dump({"version": 1, "generation": generation, "captured_ns": time.time_ns(), "origin_token": origin_token, "sha256": files}, handle)
+        json.dump(manifest, handle)
+        handle.flush()
+        os.fsync(handle.fileno())
 
 
 class Cipher:
@@ -172,6 +177,7 @@ class NativeSnapshot:
         try:
             db.query("BEGIN")
             reader = NativeReader(db, self.title, generation, lambda: before == file_state(path))
+            reader.manifest = manifest
             reader.captured_ns = manifest["captured_ns"]
             reader.origin_token = manifest.get("origin_token")
             if reader.origin_token is not None and not isinstance(reader.origin_token, str):
@@ -273,7 +279,7 @@ class NativeReader:
             raise SourceError("Snapshot changed during synchronization")
 
 
-def capture(source, destination, generation):
+def capture(source, destination, generation, *, sign=None):
     """Copy a stable main/WAL pair without opening the source via SQLite."""
     import shutil
 
@@ -307,7 +313,7 @@ def capture(source, destination, generation):
             raise SourceError("Source changed during capture; retry or use a quiescent source")
         source_identity = before["native.db"][:2]
         origin_token = hashlib.sha256(repr(source_identity).encode()).hexdigest()
-        seal(dst, generation, origin_token=origin_token)
+        seal(dst, generation, origin_token=origin_token, sign=sign)
     except BaseException:
         shutil.rmtree(dst)
         raise

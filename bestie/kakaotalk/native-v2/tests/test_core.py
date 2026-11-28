@@ -3,14 +3,19 @@ import json
 import os
 from pathlib import Path
 import sqlite3
+import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
+from core.authority import bind, trusted_capture
+from core.batch import page
 from core.model import MAX_ID, native_id, object_id
-from core.repository import Repository, RepositoryError
-from core.source import NativeReader, NativeSnapshot, SourceError, attachment_fields, capture
+from core.repository import MIGRATIONS, Repository, RepositoryError
+from core.witness import WitnessError
+from core.source import NativeReader, NativeSnapshot, SourceError, attachment_fields, capture, seal
 from core.sync import run
 
 FIRST = 9007199254740993
@@ -41,6 +46,7 @@ class SqliteAdapter:
 
 class FixtureSource:
     generation = "a"
+    counter = 0
     captured_ns = 1
     origin_token = None
     stable = True
@@ -55,6 +61,8 @@ class FixtureSource:
             db.row_factory = sqlite3.Row
             db.execute("BEGIN")
             reader = NativeReader(SqliteAdapter(db), TITLE, self.generation, lambda: self.stable)
+            self.counter += 1
+            reader.manifest = {"fixture_counter": self.counter}
             reader.captured_ns = self.captured_ns
             reader.origin_token = self.origin_token
             if self.short:
@@ -77,6 +85,12 @@ class CoreTest(unittest.TestCase):
         self.add(FIRST, room=11)
         self.writer.commit()
         self.source = FixtureSource(self.file)
+        # Engine-only fixtures emulate the trusted capture adapter. Encrypted tests below
+        # exercise real receipts and refusal of an externally resealed copy.
+        auth = patch("core.sync.authenticate", side_effect=lambda _, m: (
+            m["fixture_counter"], str(m["fixture_counter"])))
+        auth.start()
+        self.addCleanup(auth.stop)
         self.repo = Repository(self.root / "repo.sqlite", initialize=True)
         self.addCleanup(self.repo.db.close)
 
@@ -272,7 +286,7 @@ with Repository(sys.argv[1]) as r, r.transaction(write=True):
         start = self.repo.replay(snap["generation"], 0, 2)
         rest = self.repo.replay(snap["generation"], start[-1]["seq"], 100)
         self.assertEqual([e["seq"] for e in start + rest], list(range(1, snap["event_seq"] + 1)))
-        self.assertTrue(all(e["schema_version"] == 1 for e in start + rest))
+        self.assertTrue(all(e["schema_version"] == 2 for e in start + rest))
         self.assertTrue(all("at reply time" not in json.dumps(e) for e in start + rest))
         self.assertEqual(self.repo.replay(snap["generation"], snap["event_seq"], 10), [])
         for g, after in (("bad", 0), (snap["generation"], snap["event_seq"] + 1)):
@@ -309,7 +323,7 @@ with Repository(sys.argv[1]) as r, r.transaction(write=True):
 
     def test_one_writer_per_repository(self):
         with Repository(self.root / "repo.sqlite") as second, self.repo.transaction(write=True):
-            with self.assertRaises(sqlite3.OperationalError):
+            with self.assertRaises(WitnessError):
                 run(second, self.source, "import")
 
     def test_identifier_validation_and_attachment_precision(self):
@@ -334,17 +348,238 @@ with Repository(sys.argv[1]) as r, r.transaction(write=True):
                 self.fail("source should not open")
 
     def test_repository_migrates_older_supported_schema(self):
-        path = self.root / "repo.sqlite"
-        generation = self.repo.generation
-        self.repo.db.executescript("DROP INDEX idx_thread_members_thread;"
-                                  "DROP INDEX idx_events_generation_seq; DROP TABLE legacy_records; ALTER TABLE sync_state DROP COLUMN origin_token; PRAGMA user_version=1;")
-        with Repository(path) as opened:
-            self.assertEqual(opened.generation, generation)
-            self.assertEqual(opened.db.execute("PRAGMA user_version").fetchone()[0], 3)
+        path = self.root / "v1.sqlite"
+        with closing(sqlite3.connect(path)) as old:
+            old.executescript(MIGRATIONS[0] + "PRAGMA user_version=1;")
+            old.executemany("INSERT INTO metadata VALUES (?,?)",
+                            [("format", "kakao-native-v2"), ("generation", "old-generation")])
+            old.commit()
+        with self.assertRaises(WitnessError):
+            Repository(path)
+        with Repository(path, adopt=True) as opened:
+            self.assertNotEqual(opened.generation, "old-generation")
+            self.assertEqual(opened.db.execute("PRAGMA user_version").fetchone()[0], 4)
+            self.assertEqual(opened._meta("repository_id"), "old-generation")
+            self.assertTrue(opened.verify())
+
+    def test_v3_adoption_keeps_active_translation_and_old_bookmarks(self):
+        path = self.root / "v3.sqlite"
+        uid = object_id("10", "message", FIRST)
+        with closing(sqlite3.connect(path)) as old:
+            old.executescript("".join(MIGRATIONS[:3]) + "PRAGMA user_version=3;")
+            old.executemany("INSERT INTO metadata VALUES (?,?)",
+                            [("format", "kakao-native-v2"), ("generation", "legacy-generation")])
+            old.execute("INSERT INTO objects VALUES (?,?,?,?,?,?)",
+                        (uid, "message", str(FIRST), '{"body":"old"}', 2, "observed"))
+            old.execute("INSERT INTO translations VALUES (?,?,?,?,?)", (uid, "zh-Hant", 2, "old translation", 1))
+            old.execute("INSERT INTO legacy_assertions VALUES (?,?,?)", ("legacy", "m1", uid))
+            old.commit()
+        with Repository(path, adopt=True) as migrated:
+            snapshot = migrated.snapshot()
+            self.assertNotEqual(snapshot["generation"], "legacy-generation")
+            self.assertEqual(snapshot["objects"][0]["input_version"], 2)
+            self.assertEqual(snapshot["translations"][0]["text"], "old translation")
+            self.assertEqual(migrated.legacy_mapping("legacy", "m1"), ("unique", uid))
 
     def test_repository_rejects_unrelated_database(self):
         with self.assertRaises(RepositoryError):
             Repository(self.file, initialize=True)
+
+    def test_translation_input_version_only_changes_with_body(self):
+        self.load()
+        uid = object_id("10", "message", FIRST)
+        self.assertTrue(self.repo.translate(uid, "zh-Hant", 1, "first version"))
+        self.writer.execute("UPDATE NTChatMessage SET status=2, scope=3, attachment=? WHERE chatId=10 AND logId=?",
+                            ('{"src_logId":9223372036854775807}', FIRST))
+        self.writer.commit()
+        run(self.repo, self.source, "sync")
+        item = next(m for m in self.repo.snapshot()["objects"] if m["id"] == uid)
+        self.assertEqual((item["version"], item["input_version"]), (2, 1))
+        self.assertEqual(self.repo.snapshot()["translations"][0]["original_version"], 1)
+        self.assertFalse(self.repo.translate(uid, "zh-Hant", 1, "first version"))
+        self.writer.execute("UPDATE NTChatMessage SET message='edited' WHERE chatId=10 AND logId=?", (FIRST,))
+        self.writer.commit()
+        run(self.repo, self.source, "sync")
+        with self.assertRaises(RepositoryError):
+            self.repo.translate(uid, "zh-Hant", 1, "stale overwrite")
+        self.assertTrue(self.repo.translate(uid, "zh-Hant", 2, "second version"))
+        self.assertEqual(len(self.repo.snapshot()["translations"]), 1)
+        self.assertEqual(self.repo.db.execute("SELECT count(*) FROM translations").fetchone()[0], 2)
+
+    def reviewed_history(self, source, key, body="historical only", author="reviewed author",
+                         when="2026-11-25T22:00:00+08:00", precision="minute"):
+        self.repo.preserve_legacy(source, key, "legacy-html", {"raw": "private evidence"})
+        return self.repo.publish_legacy(source, key, body=body, author=author, timestamp=when,
+                                        precision=precision, confidence="reviewed", reviewed=True)
+
+    def test_legacy_projection_moves_watermark_and_whitelists_fields(self):
+        self.load()
+        seq = self.repo.watermark()
+        uid = self.reviewed_history("legacy a", "m1")
+        view = self.repo.snapshot()
+        self.assertGreater(view["event_seq"], seq)
+        self.assertEqual(view["legacy"][0]["id"], uid)
+        self.assertEqual(view["legacy"][0]["data"]["precision"], "minute")
+        self.assertNotIn("private evidence", json.dumps(view))
+        seq2 = view["event_seq"]
+        self.reviewed_history("legacy a", "m1")
+        self.assertEqual(self.repo.watermark(), seq2)
+        self.reviewed_history("legacy a", "m1", body="historical correction")
+        delta = self.repo.changes(self.repo.generation, seq2)
+        self.assertTrue(delta["replace_legacy_and_mappings"])
+        self.assertEqual(delta["records"][0]["value"]["data"]["body"], "historical correction")
+
+    def test_duplicate_history_suppression_and_mapping_removal(self):
+        self.load()
+        uid = self.reviewed_history("legacy a", "m1")
+        self.reviewed_history("legacy b", "m2")
+        self.assertEqual([x["id"] for x in self.repo.snapshot()["legacy"]], [uid])
+        self.reviewed_history("legacy c", "m3", body="message", author="fixture author",
+                              when="1970-01-01T00:08:20+00:00", precision="second")
+        self.assertEqual(len(self.repo.snapshot()["legacy"]), 1)
+        before = self.repo.watermark()
+        self.repo.map_legacy("legacy a", "m1", object_id("10", "message", FIRST))
+        delta = self.repo.changes(self.repo.generation, before)
+        self.assertTrue(delta["replace_legacy_and_mappings"])
+        self.assertTrue(all(x["value"].get("id") != uid for x in delta["records"]))
+        self.assertEqual(len(self.repo.snapshot()["legacy"]), 0)
+
+    def test_native_arrival_suppresses_previously_published_legacy_row(self):
+        self.load()
+        uid = self.reviewed_history("legacy a", "m1", body="late", author="fixture author",
+                                    when="1970-01-01T00:08:20+00:00", precision="second")
+        self.assertEqual([v["id"] for v in self.repo.snapshot()["legacy"]], [uid])
+        seq = self.repo.watermark()
+        self.add(FIRST + 1, body="late")
+        self.writer.commit()
+        run(self.repo, self.source, "reconcile")
+        self.assertEqual(self.repo.snapshot()["legacy"], [])
+        self.assertTrue(self.repo.changes(self.repo.generation, seq)["replace_legacy_and_mappings"])
+
+    def test_three_updates_collapse_and_pages_keep_watermark(self):
+        self.load()
+        start = self.repo.watermark()
+        for status in (1, 2, 3):
+            self.writer.execute("UPDATE NTChatMessage SET status=? WHERE chatId=10 AND logId=?", (status, FIRST))
+            self.writer.commit()
+            run(self.repo, self.source, "sync")
+        self.writer.executescript("UPDATE NTUser SET nickName='new' WHERE linkId=20;")
+        run(self.repo, self.source, "sync")
+        batch = self.repo.changes(self.repo.generation, start)
+        self.assertEqual(len(batch["records"]), 2)
+        self.assertEqual(batch["end"], start + 4)
+        msg = next(x["value"]["object"] for x in batch["records"] if x["value"]["object"]["kind"]=="message")
+        self.assertEqual((msg["version"],msg["data"]["status"]),(4,3))
+        first = page(batch, 0, 1)
+        self.writer.executescript("UPDATE NTUser SET nickName='newer' WHERE linkId=20;")
+        run(self.repo, self.source, "sync")
+        second = page(batch, first["next_offset"], 1)
+        self.assertIsNone(second["next_offset"])
+        self.assertEqual(first["records"] + second["records"], batch["records"])
+        self.assertEqual(second, page(batch, first["next_offset"], 1))
+        self.assertEqual(first["end"], second["end"])
+        self.assertEqual(self.repo.changes(self.repo.generation, second["end"])["end"], second["end"] + 1)
+        self.assertEqual(self.repo.changes("wrong-generation", start)["mode"], "snapshot")
+        self.assertEqual(self.repo.changes(self.repo.generation, self.repo.watermark()+1)["reset_reason"],
+                         "history_unavailable")
+
+    def test_paged_client_transaction_retry_does_not_advance_halfway(self):
+        self.load()
+        batch = self.repo.changes("bootstrap", 0)
+        first = page(batch, 0, 2)
+        second = page(batch, first["next_offset"], 100)
+        self.assertIsNone(second["next_offset"])
+        with closing(sqlite3.connect(":memory:")) as client:
+            client.executescript("CREATE TABLE objects(id TEXT PRIMARY KEY);"
+                                 "CREATE TABLE state(seq INTEGER); INSERT INTO state VALUES (0);")
+
+            def apply(fail):
+                self.assertEqual(first["batch_id"], second["batch_id"])
+                self.assertEqual(first["next_offset"], second["offset"])
+                self.assertEqual(first["length"], len(first["records"] + second["records"]))
+                with client:
+                    for i, record in enumerate(first["records"] + second["records"]):
+                        uid = record["value"]["object"]["id"]
+                        client.execute("INSERT INTO objects VALUES (?)", (uid,))
+                        if fail and i == 1:
+                            raise RuntimeError("interrupted before cursor commit")
+                    client.execute("UPDATE state SET seq=?", (second["end"],))
+
+            with self.assertRaises(RuntimeError):
+                apply(True)
+            self.assertEqual(client.execute("SELECT seq FROM state").fetchone()[0], 0)
+            self.assertEqual(client.execute("SELECT count(*) FROM objects").fetchone()[0], 0)
+            apply(False)
+            self.assertEqual(client.execute("SELECT seq FROM state").fetchone()[0], batch["end"])
+            self.assertEqual(client.execute("SELECT count(*) FROM objects").fetchone()[0], len(batch["records"]))
+
+    def test_old_file_cannot_reuse_witness_and_restore_rotates(self):
+        self.load()
+        uid = object_id("10", "message", FIRST)
+        self.repo.translate(uid, "zh-Hant", 1, "retained translation")
+        self.repo.map_legacy("html", "m1", uid)
+        backup = self.root / "backup.sqlite"
+        self.repo.backup(backup)
+        original_generation = self.repo.generation
+        self.writer.executescript("UPDATE NTChatMessage SET status=8 WHERE chatId=10;")
+        run(self.repo, self.source, "sync")
+        high = self.repo.watermark()
+        earlier = self.root / "earlier.sqlite"
+        shutil.copyfile(backup, earlier)
+        os.replace(earlier, self.repo.path)
+        with self.assertRaises(WitnessError):
+            Repository(self.repo.path)
+        generation = Repository.restore(self.repo.path, backup)
+        self.assertNotEqual(generation, original_generation)
+        with Repository(self.repo.path) as restored:
+            snap = restored.snapshot()
+            self.assertEqual(snap["event_seq"], 0)
+            self.assertEqual(snap["translations"][0]["text"], "retained translation")
+            self.assertEqual(restored.legacy_mapping("html", "m1"), ("unique", uid))
+            for value in (1,2,3):
+                self.writer.execute("UPDATE NTChatMessage SET status=? WHERE chatId=10", (value,))
+                self.writer.commit()
+                run(restored, self.source, "sync")
+            self.assertGreaterEqual(restored.watermark(), high)
+            with self.assertRaises(RepositoryError):
+                restored.replay(original_generation, high, 100)
+            self.assertEqual(restored.changes(original_generation, high)["reset_reason"], "generation_mismatch")
+
+    @patch("core.repository.now", return_value="same-clock-fixture")
+    def test_equal_sequence_different_history_is_rejected(self, _now):
+        self.load()
+        fork = self.root / "fork.sqlite"
+        self.repo.backup(fork)
+        fork_witness = fork.with_name(fork.name + ".witness")
+        shutil.copyfile(self.repo.witness.path, fork_witness)
+        fork_witness.chmod(0o600)
+        counter = self.source.counter
+        self.writer.executescript("UPDATE NTChatMessage SET status=1 WHERE chatId=10;")
+        run(self.repo, self.source, "sync")
+        trusted = self.repo.watermark()
+        self.source.counter = counter
+        self.writer.executescript("UPDATE NTChatMessage SET status=2 WHERE chatId=10;")
+        with Repository(fork) as other:
+            run(other, self.source, "sync")
+            self.assertEqual(other.watermark(), trusted)
+        os.replace(fork, self.repo.path)
+        with self.assertRaisesRegex(WitnessError, "history"):
+            Repository(self.repo.path)
+
+    def test_witness_pending_crash_paths(self):
+        self.load()
+        with self.repo.witness.locked():
+            valid = self.repo.witness.read()
+            valid["pending"] = valid["committed"]
+            self.repo.witness.write(valid)
+        self.assertTrue(self.repo.verify())
+        with self.repo.witness.locked():
+            valid = self.repo.witness.read()
+            self.assertIsNone(valid["pending"])
+            valid["pending"] = {**valid["committed"], "seq": self.repo.watermark()+1}
+            self.repo.witness.write(valid)
+        with self.assertRaises(WitnessError):
+            self.repo.snapshot()
 
     def test_cli_snapshot_is_private_and_no_overwrite(self):
         self.load()
@@ -396,6 +631,56 @@ class EncryptedFixtureTest(unittest.TestCase):
                 with self.assertRaises(SourceError):
                     run(repo, NativeSnapshot(folder, TITLE, library, b"wrong"), "sync")
                 self.assertEqual(repo.snapshot(), before)
+
+
+    def test_bound_capture_accepts_normal_edit_and_rejects_resealed_old_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            app = root / "app.db"
+            library = Path(os.environ["KAKAO_TEST_SQLCIPHER"])
+            tool = os.environ["KAKAO_TEST_SQLCIPHER_CLI"]
+            fake = b"fixture-freshness"
+            def mutate(sql):
+                prefix = "PRAGMA key='fixture-freshness'; PRAGMA cipher_compatibility=3;"
+                subprocess.run([tool, "-batch", "-bail", str(app)], input=prefix+sql,
+                               capture_output=True, text=True, check=True)
+            mutate(SCHEMA + f"INSERT INTO NTChatMessage VALUES(10,{FIRST},1,42,500,'A',NULL,0,1,0,1,0,0,0);")
+            def src(folder):
+                return NativeSnapshot(folder, TITLE, library, fake)
+            with Repository(root / "repo.sqlite", initialize=True) as repo:
+                bind(repo, app, "a")
+                old = root / "first"
+                trusted_capture(repo, app, old, "a")
+                run(repo, src(old), "import")
+                mutate("UPDATE NTChatMessage SET message='B';")
+                newer = root / "second"
+                trusted_capture(repo, app, newer, "a")
+                self.assertEqual(run(repo, src(newer), "sync")["changes"], 1)
+                self.assertEqual(run(repo, src(newer), "sync")["changes"], 0)
+                previous = repo.snapshot()
+                with self.assertRaises(SourceError):
+                    run(repo, src(old), "sync")
+                resealed = root / "resealed"
+                resealed.mkdir()
+                shutil.copyfile(old / "native.db", resealed / "native.db")
+                seal(resealed, "a")
+                with self.assertRaisesRegex(RepositoryError, "Untrusted"):
+                    run(repo, src(resealed), "sync")
+                forged = json.loads((resealed / "snapshot.json").read_text())
+                forged["receipt"] = json.loads((newer / "snapshot.json").read_text())["receipt"]
+                (resealed / "snapshot.json").write_text(json.dumps(forged))
+                with self.assertRaises(SourceError):
+                    run(repo, src(resealed), "sync")
+                self.assertEqual(repo.snapshot(), previous)
+                external = root / "authorized-external"
+                external.mkdir()
+                shutil.copyfile(old / "native.db", external / "native.db")
+                seal(external, "explicit-recovery")
+                with self.assertRaisesRegex(RepositoryError, "Untrusted"):
+                    run(repo, src(external), "reconcile", accept_source_generation=True)
+                result = run(repo, src(external), "reconcile", accept_source_generation=True,
+                             recover_external=True)
+                self.assertEqual(result["changes"], 1)
 
 
 if __name__ == "__main__":

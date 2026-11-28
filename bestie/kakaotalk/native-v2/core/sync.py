@@ -1,6 +1,7 @@
 """Single-writer synchronization with a fixed upstream upper bound."""
 import time
 
+from .authority import authenticate
 from .model import native_id
 from .repository import RepositoryError
 
@@ -22,7 +23,7 @@ def batches(reader, after, upper, page, *, include_floor=False):
 
 
 def run(repo, source, operation, *, page=128, overlap=100, interval=3600,
-        accept_source_generation=False, clock=time.time):
+        accept_source_generation=False, recover_external=False, clock=time.time):
     if page < 1 or overlap < 1 or interval < 1:
         raise ValueError("Synchronization limits must be positive")
     # Take the local write reservation before opening the source.
@@ -39,8 +40,17 @@ def run(repo, source, operation, *, page=128, overlap=100, interval=3600,
             raise RepositoryError("Source room identity changed")
         if replacement and not (operation == "reconcile" and accept_source_generation):
             raise RepositoryError("Source generation changed, explicit reconciliation required")
-        if state and not replacement and reader.captured_ns < state["captured_ns"]:
-            raise RepositoryError("Snapshot is older than the last applied snapshot")
+        counter, receipt_hash = authenticate(repo, reader.manifest)
+        if state and counter is None and not (replacement and recover_external and operation == "reconcile"):
+            raise RepositoryError("Untrusted sealed copy requires explicit new-generation recovery")
+        if recover_external and (not replacement or operation != "reconcile" or counter is not None):
+            raise RepositoryError("External recovery requires a different explicitly accepted source generation")
+        if state and not replacement:
+            prior = state["source_counter"]
+            if prior is not None and (counter < prior or (counter == prior and receipt_hash != state["receipt_hash"])):
+                raise RepositoryError("Trusted capture receipt is older or conflicts")
+            if reader.captured_ns < state["captured_ns"]:
+                raise RepositoryError("Snapshot is older than the last applied snapshot")
         upper = reader.latest()
         previous = state["high_water"] if state else None
         if previous and not replacement and (upper is None or int(upper) < int(previous)):
@@ -61,7 +71,7 @@ def run(repo, source, operation, *, page=128, overlap=100, interval=3600,
         for rows in batches(reader, begin, upper, page, include_floor=begin is not None):
             for row in rows:
                 nid = row["id"]
-                historical = not state or bool(previous and int(nid) <= int(previous))
+                historical = not state or replacement or bool(previous and int(nid) <= int(previous))
                 if full:
                     seen["message"].add(nid)
                 counts["messages_read"] += 1
@@ -69,9 +79,11 @@ def run(repo, source, operation, *, page=128, overlap=100, interval=3600,
         if upper is not None and (full or upper != previous) and (not counts["messages_read"] or nid != upper):
             raise RepositoryError("Incomplete source batch, expected upper bound was not read")
         reader.verify()
+        repo.refresh_legacy()
         if full:
             counts["not_observed"] = sum(repo.note_absent(kind, ids) for kind, ids in seen.items())
         repo.save_state(*reader.identity, reader.generation, reader.captured_ns, upper,
                         checked_at if full else state["reconciled_at"],
-                        origin if origin or replacement or not state else state["origin_token"])
+                        origin if origin or replacement or not state else state["origin_token"],
+                        counter, receipt_hash)
         return counts

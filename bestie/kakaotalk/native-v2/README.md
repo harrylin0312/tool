@@ -1,30 +1,46 @@
 # KakaoTalk Reader V2 本機核心
 
-本目錄可獨立執行，使用 Python 3.11+ 和既經批准建置的 SQLCipher 4.12.0 動態函式庫。本機 SHA-256 封存、SQLite 與同步均使用標準函式庫。SQLCipher 以相容模式 3 開啟隔離副本。日常操作從已確認的本機來源路徑開始，定位及金鑰取得留在核准的本機流程。
+從 `bestie/kakaotalk/native-v2` 執行。需 Python 3.11+ 及已核准的 SQLCipher 4.12.0 動態庫。標準函式庫處理旁路 SQLite 和一致性變更批次。資料庫、擷取檔案、備份和投影須留在 Git 之外的私人目錄。SQLCipher 以相容模式 3 開啟複本。
 
-Python 3.11、3.12、3.13、3.14 可執行；候選驗收使用 3.14。將已核准建置的 SQLCipher artifact 留在私人目錄，使用絕對路徑指定 `--sqlcipher`。旁路資料庫使用這個 Python 內建的 SQLite。從任意位置啟動時，把工作目錄設為本目錄即可，無需 pip 或全域安裝。
-
-## CLI
-
-以下指令從 `bestie/kakaotalk/native-v2` 執行。目的地使用權限 700 的私人目錄，資料庫、封存副本和測試快照均放在 Git 儲存庫外。`--source-generation` 是自選不含隱私的穩定代號，來源檔案替換須新代號。每次 capture 用新的 snapshot 目錄。
+## 初始化及來源
 
 ```sh
-python3 -m core init --repo /private/sidecar/repo.sqlite
-python3 -m core capture --source-db /private/known-source --snapshot /private/sidecar/snapshot-1 --source-generation local-1
-python3 -m core import --repo /private/sidecar/repo.sqlite --snapshot /private/sidecar/snapshot-1 --room "$ROOM_TITLE" --sqlcipher "$SQLCIPHER_LIBRARY"
-python3 -m core status --repo /private/sidecar/repo.sqlite
-python3 -m core stats --repo /private/sidecar/repo.sqlite
-python3 -m core snapshot --repo /private/sidecar/repo.sqlite --output /private/sidecar/test-export.json
-python3 -m core events --repo /private/sidecar/repo.sqlite --generation "$LOCAL_GENERATION" --after 0
-python3 -m core verify --repo /private/sidecar/repo.sqlite
+python3 -m core init --repo "$REPO" --witness "$WITNESS"
+python3 -m core bind-source --repo "$REPO" --witness "$WITNESS" --source-db "$KNOWN_SOURCE" --source-generation local-1
+python3 -m core capture --repo "$REPO" --witness "$WITNESS" --source-db "$KNOWN_SOURCE" --source-generation local-1 --snapshot "$FIRST_COPY"
+python3 -m core import --repo "$REPO" --witness "$WITNESS" --snapshot "$FIRST_COPY" --room "$ROOM_TITLE" --sqlcipher "$SQLCIPHER_LIBRARY"
 ```
 
-import、sync、reconcile 透過 stdin 接收一行來源金鑰。使用私人程序管線，避免 shell history 或可見終端輸入。後續用 capture 產生新封存副本，以相同選項改用 sync。`--overlap` 和 `--reconcile-interval` 預設 100 列和 3600 秒，可調整。reconcile 立即完整對帳。來源世代變更時，以 reconcile 加 `--accept-source-generation` 明確恢復至已確認的同一房間。截斷水位或讀錯房間會停止。需要把已知一致的外部副本交給 CLI 時，先將主檔及同時段 WAL 放在私人目錄，再以 seal 建清單；seal 只驗內容未再改動，無法證明來源本身一致。若來源在 capture 時一直寫入，待穩定後重試或使用離線一致性副本。
+日常擷取從首次定位確認的原始檔開始。import、sync、reconcile 以私人程序管線從 stdin 取得一行解鎖材料。每次 capture 用新的目錄，以相同綁定取得收據，再執行 sync。收據記錄在見證檔且只承認最新一次擷取，失敗擷取後可重試出新的收據。資料夾可用 0700 保護。
 
-## 自動化測試
+封存既有複本的 seal 不簽發收據。這類外部副本可由操作者明確選擇作空庫歷史匯入。已有同步狀態時，外部副本只可使用不同來源世代，經 reconcile 加 `--accept-source-generation --recover-external` 完整復原。只有在人工確認確實需要舊資料復原時使用。真實來源換檔，須驗證來源後 bind-source 加 `--replace-binding` 和新來源世代，重新擷取再以 reconcile 加 `--accept-source-generation`。同房間及原有映射檢查仍會生效。
+
+若來源在 capture 期間改變，擷取會安全停止，可稍後重試。複製與封存都只是穩定副本證據，KakaoTalk 尚無可直接核對的全域版本保證。旁路中不存在可認證的舊副本時不可重造同一來源世代。正常程式仍接受已綁定檔案中正文修改。
+
+## 狀態、事件及備份
+
+除了 page，下面需要 `--repo "$REPO" --witness "$WITNESS"`。未指定 witness 時，用和旁路資料庫相鄰的 `.witness`，正式測試應放到獨立路徑，並在後續命令沿用。常見呼叫如下。
+
+```sh
+python3 -m core status --repo "$REPO" --witness "$WITNESS"
+python3 -m core stats --repo "$REPO" --witness "$WITNESS"
+python3 -m core verify --repo "$REPO" --witness "$WITNESS"
+python3 -m core changes --repo "$REPO" --witness "$WITNESS" --generation bootstrap --after 0 --output "$BATCH"
+python3 -m core page --batch "$BATCH" --offset 0 --limit 100 --output "$PAGE"
+python3 -m core backup --repo "$REPO" --witness "$WITNESS" --output "$BACKUP"
+python3 -m core restore --repo "$REPO" --witness "$WITNESS" --backup "$BACKUP"
+```
+
+status 提供健康水位及來源信任分類。snapshot 可輸出原子私有投影，events 可檢視失效提示，changes/page 用在可一致套用的版本投影。請見 [事件協定](../docs/architecture/EVENT-PROTOCOL.md)。資料檔為 0600，CLI 僅回報摘要。歷史顯示層可使用 Repository.preserve_legacy 與 publish_legacy，來源識別應用無私人資料的本機代號。
+
+備份只包含旁路 SQLite。見證檔是私人可信狀態，包含擷取簽章材料，應留在獨立持久位置。保留目前見證檔，檢查並退出所有 reader/writer 後，才執行明確 restore。還原會旋轉世代，舊客戶端需完整投影。若檔案與見證不符，停止操作並從已知備份復原。若見證遺失，不能自動從舊檔恢復同一世代。
+
+已知的 V1–V3 P2 旁路資料庫須先做私人備份，再用 `adopt --repo "$REPO" --witness "$WITNESS"`。adopt 保留 ID、映射和譯文並旋轉世代。舊客戶端需重新取得完整投影。既有來源憑證保留在本機，P2.1 需新增一次 bind-source 才能日常擷取。
+
+## 測試
 
 ```sh
 python3 -m unittest discover -s tests -v
 ```
 
-另設 `KAKAO_TEST_SQLCIPHER` 及 `KAKAO_TEST_SQLCIPHER_CLI` 指向已核准的 library 和 CLI，可執行合成加密 WAL 測試。一般測試皆建立臨時 SQLite，不觸碰正式資料。[驗收報告](../docs/research/P2-IMPLEMENTATION-REPORT.md)
+設定 `KAKAO_TEST_SQLCIPHER` 和 `KAKAO_TEST_SQLCIPHER_CLI` 指向已核准的動態庫和 CLI，可執行兩項合成加密測試。其他測試使用隔離 SQLite。[P2.1 修正報告](../docs/research/P2-QA-REMEDIATION.md)

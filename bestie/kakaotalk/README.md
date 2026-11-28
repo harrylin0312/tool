@@ -8,7 +8,7 @@
 
 ## V2 開發分支
 
-P2 旁路共用核心已實作，候選基準為 `1071dd72474564cab85bc32b5f49cd49ceb24f5a`。在 `dev/kakaotalk-native-v2` 驗收，正式原文與發布流程仍採 main 的既有版本。新三層架構、CLI 與驗收證據見下表。
+P2.1 已依獨立 QA 修正事件世代、來源信任、可發布歷史、翻譯輸入版本與一致性投影，待 Work 第二輪驗收。P2 候選基準為 `1071dd72474564cab85bc32b5f49cd49ceb24f5a`。在 `dev/kakaotalk-native-v2` 驗收，正式原文與發布流程仍採 main 的既有版本。新三層架構、CLI 與驗收證據見下表。
 
 ## 現況（以實際正式快照與 QA 區分）
 
@@ -32,6 +32,7 @@ P2 旁路共用核心已實作，候選基準為 `1071dd72474564cab85bc32b5f49cd
 | --- | --- |
 | [V2 架構](docs/architecture/V2-ARCHITECTURE.md) | Mac 即時、GitHub Pages 與客戶端離線三層，以及共用擷取核心。 |
 | [V2 資料模型](docs/architecture/DATA-MODEL.md)／[事件協定](docs/architecture/EVENT-PROTOCOL.md) | Repository、穩定 ID、可重播事件與世代。 |
+| [P2 原獨立 QA](docs/research/P2-QA-REPORT.md)／[P2.1 修正](docs/research/P2-QA-REMEDIATION.md) | 五項修正、永久回歸測試、真實副本驗證及剩餘限制。 |
 | [V2 本機操作](native-v2/README.md)／[P2 驗收報告](docs/research/P2-IMPLEMENTATION-REPORT.md) | CLI、測試指令、實機副本量測及後續驗收範圍。 |
 | [docs/WORKFLOW.md](docs/WORKFLOW.md) | 現行擷取、回覆審核、原文及翻譯發布、加密、驗證與回退操作。 |
 | [docs/RESEARCH.md](docs/RESEARCH.md) | 本機資料庫擷取研究、候選工具、驗證方法與備援。 |
