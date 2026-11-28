@@ -47,3 +47,9 @@ export function resolvePair(rows,mapping,pair){
   if(targetRow>=replyRow||!reply||!target||Number(target.slice(1))>=Number(reply.slice(1)))throw Error('unverified or reversed reply mapping');
   return [reply,target];
 }
+
+export const hasTimestamp=r=>typeof r.Date==='string'&&/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(r.Date);
+export const isUntimedEvent=r=>r.Date===''&&r.User===''&&typeof r.Message==='string';
+export const validRow=r=>typeof r.User==='string'&&typeof r.Message==='string'&&(hasTimestamp(r)||isUntimedEvent(r));
+export const isNotice=r=>isUntimedEvent(r)||[r.User+' joined this chatroom.',r.User+' left this chatroom.','The message has been deleted.'].includes(r.Message);
+export const lastTimestamp=rows=>rows.findLast(hasTimestamp)?.Date;

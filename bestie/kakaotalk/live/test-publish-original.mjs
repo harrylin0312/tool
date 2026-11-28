@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mapHistory,resolvePair,resolveSelector} from './reply-mapping.mjs';
+import {mapHistory,resolvePair,resolveSelector,validRow,isNotice,lastTimestamp} from './reply-mapping.mjs';
 const r=(Date,User,Message)=>({Date,User,Message});
 const rows=[r('2026-11-25 10:00:01','A','old'),r('2026-11-25 10:01:01','A','duplicate'),r('2026-11-25 10:01:01','A','duplicate'),r('2026-11-25 10:02:01','B','second'),r('2026-11-26 00:00:01','C','new')];
 const n=(id,row,stamp=true)=>({id,name:rows[row-1].User,body:rows[row-1].Message,day:rows[row-1].Date.slice(0,10),clock:rows[row-1].Date.slice(11,16),stamp:stamp?rows[row-1].Date:''});
@@ -18,3 +18,11 @@ assert.throws(()=>mapHistory(rows,[n('m2',1),n('m2',4)]));
 assert.deepEqual([...mapHistory(rows,[n('m3',2)])],[]);
 assert.throws(()=>resolveSelector(rows,['missing','A']));
 console.log('PASS: 11 historical mapping and reply selector assertions');
+const untimed=r('','','The message has been deleted.');
+assert.equal(validRow(untimed),true);
+assert.equal(isNotice(untimed),true);
+assert.equal(validRow(r('','','unknown event')),true);
+assert.equal(validRow(r('','A','missing time')),false);
+assert.equal(validRow(r('invalid','A','message')),false);
+assert.equal(lastTimestamp([...rows,untimed]),rows.at(-1).Date);
+console.log('PASS: 6 untimed event and cutoff assertions');

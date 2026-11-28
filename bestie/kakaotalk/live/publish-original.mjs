@@ -3,7 +3,7 @@ import {createCipheriv, createDecipheriv, randomBytes, createHash} from 'node:cr
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {parseHTML} from 'linkedom';
-import {normalize,mapHistory,resolvePair} from './reply-mapping.mjs';
+import {normalize,mapHistory,resolvePair,validRow,isNotice,lastTimestamp} from './reply-mapping.mjs';
 
 // Run from this folder after installing linkedom. Pass the private link on stdin.
 // First run: node publish-original.mjs current.csv previous.csv
@@ -32,7 +32,10 @@ const rows=csv(current);
 const old=previous ? csv(previous) : null;
 const count=old?.length ?? Number(main.dataset.exportCount);
 if (!count || rows.length<count || anchor(rows.slice(0,count))!==(old ? anchor(old) : main.dataset.exportAnchor)) throw Error('匯出檔未銜接上次進度');
-if(rows.some(r=>typeof r.User!=='string'||typeof r.Message!=='string'||!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(r.Date)))throw Error('CSV 欄位或時間格式錯誤');
+if(rows.some(r=>!validRow(r)))throw Error('CSV 欄位或時間格式錯誤');
+const through=lastTimestamp(rows);
+if(!through)throw Error('CSV 沒有可用時間');
+const throughISO=through.replace(' ','T')+'+08:00';
 const digest=rs=>createHash('sha256').update(JSON.stringify(rs.map(r=>[r.Date,r.User,r.Message]))).digest('hex');
 if(old && digest(old)!==digest(rows.slice(0,count)))throw Error('歷史紀錄未對齊');
 if(!old && main.dataset.exportDigest && main.dataset.exportDigest!==digest(rows.slice(0,count)))throw Error('歷史 CSV 內容已變更');
@@ -115,29 +118,32 @@ for(const a of history){
     mapping.set(rowNo,a.id);mappedIds.add(a.id);
   }
 }
-for(const [rowNo,id] of mapping)remember(document.getElementById(id),rowNo);
+let lastMappedId=0;
+for(const [rowNo,id] of [...mapping].sort((a,b)=>a[0]-b[0])){
+  const num=Number(id.slice(1));
+  if(!/^m\d+$/.test(id)||num<=lastMappedId)throw Error('來源映射順序錯誤');
+  lastMappedId=num;
+  remember(document.getElementById(id),rowNo);
+}
 for(const a of history){
   for(const n of a.querySelectorAll('.name,.original,.avatar:not(.uji)'))setAttr(n,'translate','no');
   const avatar=a.querySelector('.avatar');if(avatar)setAttr(avatar,'aria-hidden','true');
   const source=a.getAttribute('data-source-time');
   if(source)setAttr(a.querySelector('time'),'datetime',source.replace(' ','T')+'+08:00');
 }
-if(!old&&count===rows.length&&!repairedAvatars&&!repairedReplies&&!metadataChanges&&!process.env.REVIEWED_PAIRS&&main.dataset.exportDigest===digest(rows)&&main.dataset.snapshotThrough===rows.at(-1).Date.replace(' ','T')+'+08:00'){
-  console.log('沒有新增訊息或結構修復');process.exit(0);
-}
 const latest=document.querySelector('#latest');
 let id=Math.max(...Array.from(document.querySelectorAll('[id^="m"]'),n=>Number(n.id.slice(1))).filter(Number.isFinite));
 let rowNo=count;
-let day=rows[count-1].Date.slice(0,10);
+let day=lastTimestamp(rows.slice(0,count))?.slice(0,10)||'';
 const avatar=document.querySelector('.avatar.uji')?.outerHTML;
 for(const {Date:stamp,User:name,Message:message} of rows.slice(count)){
   const date=stamp.slice(0,10), time=stamp.slice(11,16), body=esc(message).replace(/https?:\/\/[^\s<>]+/g,url=>'<a href="'+url+'" target="_blank" rel="noopener noreferrer">'+url+'</a>').replaceAll('\n','<br>');
-  if(date!==day){latest.insertAdjacentHTML('beforebegin','<p class="notice">'+esc(date)+'</p>');day=date}
+  if(date&&date!==day){latest.insertAdjacentHTML('beforebegin','<p class="notice">'+esc(date)+'</p>');day=date}
   const attrs='id="m'+(++id)+'" data-day="'+esc(date)+'" data-clock="'+esc(time)+'"';
   rowNo++;
-  const notice=[name+' joined this chatroom.',name+' left this chatroom.','The message has been deleted.'].includes(message);
+  const notice=isNotice({Date:stamp,User:name,Message:message});
   const icon=name==='유디❤️' && avatar ? avatar : '<span class="avatar" style="background:'+avatarColor(name)+'" aria-hidden="true" translate="no">'+esc(Array.from(name)[0]||'')+'</span>';
-  latest.insertAdjacentHTML('beforebegin',notice ? '<p class="notice" translate="no" '+attrs+'>'+body+' · '+esc(time)+'</p>' : '<article '+attrs+'>'+icon+'<div><div class="name" translate="no">'+esc(name)+'</div><div class="line"><div class="bubble"><div class="original" translate="no">'+body+'</div></div><time datetime="'+esc(stamp.replace(' ','T')+'+08:00')+'">'+esc(time)+'</time></div></div></article>');
+  latest.insertAdjacentHTML('beforebegin',notice ? '<p class="notice" translate="no" '+attrs+'>'+body+(time?' · '+esc(time):'')+'</p>' : '<article '+attrs+'>'+icon+'<div><div class="name" translate="no">'+esc(name)+'</div><div class="line"><div class="bubble"><div class="original" translate="no">'+body+'</div></div><time datetime="'+esc(stamp.replace(' ','T')+'+08:00')+'">'+esc(time)+'</time></div></div></article>');
   const inserted=document.getElementById('m'+id);remember(inserted,rowNo);
   if(!notice)mapping.set(rowNo,inserted.id);
 }
@@ -175,14 +181,14 @@ if(process.env.REVIEWED_PAIRS){
     if(reply.querySelector('.quote').getAttribute('href')!==href||!Array.from(ul.querySelectorAll('a')).some(a=>a.getAttribute('href')==='#'+replyId))throw Error('雙向回覆驗證失敗');
   }
 }
-if(!old&&count===rows.length&&!repairedAvatars&&!repairedReplies&&!metadataChanges&&!addedPairs&&main.dataset.exportDigest===digest(rows)&&main.dataset.snapshotThrough===rows.at(-1).Date.replace(' ','T')+'+08:00'){
+if(!old&&count===rows.length&&!repairedAvatars&&!repairedReplies&&!metadataChanges&&!addedPairs&&main.dataset.exportDigest===digest(rows)&&main.dataset.snapshotThrough===throughISO){
   console.log('沒有新增訊息或結構修復');process.exit(0);
 }
 main.dataset.exportCount=String(rows.length);
 main.dataset.exportAnchor=anchor(rows);
 main.dataset.exportDigest=digest(rows);
-main.dataset.snapshotThrough=rows.at(-1).Date.replace(' ','T')+'+08:00';
-document.querySelector('.top small').textContent='原文 · 截至 '+rows.at(-1).Date.slice(0,16)+'（台灣時間）';
+main.dataset.snapshotThrough=throughISO;
+document.querySelector('.top small').textContent='原文 · 截至 '+through.slice(0,16)+'（台灣時間）';
 for(const article of document.querySelectorAll('article')){
   const node=article.querySelector('.avatar:not(.uji)');
   if(node && !colorPattern.test(node.getAttribute('style')||''))throw Error('頭像背景缺失: '+article.id);
