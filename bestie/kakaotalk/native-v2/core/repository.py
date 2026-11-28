@@ -1,5 +1,5 @@
 """Sidecar storage and transactionally appended replay log."""
-from contextlib import closing, contextmanager
+from contextlib import ExitStack, closing, contextmanager
 from collections import defaultdict
 from datetime import datetime, timezone
 import unicodedata
@@ -101,6 +101,29 @@ def database_point(db):
             "sync": fingerprint(dict(state) if state else None)}
 
 
+def check_restore_sidecars(path):
+    for suffix in ("-wal", "-shm"):
+        file = path.with_name(path.name + suffix)
+        if file.exists() or file.is_symlink():
+            raise RepositoryError("WAL or SHM blocks repository restore")
+
+
+def begin_restore_transaction(db, path):
+    rollback_modes = ("delete", "truncate", "persist")
+    try:
+        # Persistent WAL mode may have no sidecars between connections.
+        if db.execute("PRAGMA journal_mode").fetchone()[0] not in rollback_modes:
+            raise RepositoryError("Restore requires rollback journal mode")
+        db.execute("BEGIN EXCLUSIVE")
+        check_restore_sidecars(path)
+        if db.execute("PRAGMA journal_mode").fetchone()[0] not in rollback_modes:
+            raise RepositoryError("Database stopped using rollback journal mode")
+    except sqlite3.OperationalError as error:
+        if error.sqlite_errorcode & 0xff in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED):
+            raise RepositoryError("Active SQLite transaction blocks repository restore") from error
+        raise
+
+
 def recover_rollback_journal(path, record):
     journal = path.with_name(path.name + "-journal")
     if not journal.exists() and not journal.is_symlink():
@@ -112,7 +135,7 @@ def recover_rollback_journal(path, record):
                                  isolation_level=None, timeout=0)) as db:
         db.row_factory = sqlite3.Row
         # SQLite owns journal recovery. No state is exposed from this connection.
-        db.execute("BEGIN EXCLUSIVE")
+        begin_restore_transaction(db, path)
         try:
             version = db.execute("PRAGMA user_version").fetchone()[0]
             identity = db.execute("SELECT value FROM metadata WHERE key='format'").fetchone()
@@ -132,10 +155,36 @@ def recover_rollback_journal(path, record):
             raise
     if journal.exists():
         raise RepositoryError("SQLite did not finish rollback journal recovery")
+    return point
+
+
+@contextmanager
+def lock_restore_database(path, *, allow_missing=False, recovered_point=None):
+    """Hold an exclusive rollback-mode transaction until restore confirmation."""
+    check_restore_sidecars(path)
+    journal = path.with_name(path.name + "-journal")
+    if journal.exists() or journal.is_symlink():
+        raise RepositoryError("Rollback journal appeared during repository restore")
+    if not path.is_file():
+        if not allow_missing:
+            raise RepositoryError("Missing database during restore")
+        yield
+        return
+    with closing(sqlite3.connect(path.as_uri() + "?mode=rw", uri=True,
+                                 isolation_level=None, timeout=0)) as db:
+        db.row_factory = sqlite3.Row
+        begin_restore_transaction(db, path)
+        if journal.exists() or journal.is_symlink():
+            raise RepositoryError("Rollback journal appeared during repository restore")
+        if recovered_point is not None and database_point(db) != recovered_point:
+            raise WitnessError("Repository changed after rollback journal recovery")
+        yield
 
 
 class Repository:
     def __init__(self, path, initialize=False, *, witness=None, adopt=False):
+        self.witness_record = None
+        self._writing = False
         self.path = safe_path(Path(path))
         self.witness = Witness(witness or self.path.with_name(self.path.name + ".witness"))
         if self.witness.path.resolve() == self.path.resolve():
@@ -217,6 +266,7 @@ class Repository:
             point = record["committed"]
             with self._transaction(write=write):
                 self.witness_record = record
+                self._writing = write
                 try:
                     yield
                     proposed = self._point() if write else point
@@ -225,8 +275,21 @@ class Repository:
                         self.witness.write(record)
                 finally:
                     self.witness_record = None
+                    self._writing = False
             if proposed != point:
                 self.witness.verify(proposed)
+
+    @contextmanager
+    def _coordinated_read(self):
+        if self.witness_record is not None:
+            yield
+        else:
+            with self.transaction():
+                yield
+
+    def _require_write(self):
+        if not self._writing:
+            raise RepositoryError("A coordinated write transaction is required")
 
     def _migrate(self, initialize):
         version = self.db.execute("PRAGMA user_version").fetchone()[0]
@@ -253,11 +316,13 @@ class Repository:
         self.generation = self.db.execute("SELECT value FROM metadata WHERE key='generation'").fetchone()[0]
 
     def state(self):
-        state = self.db.execute("SELECT * FROM sync_state").fetchone()
-        return dict(state) if state else None
+        with self._coordinated_read():
+            state = self.db.execute("SELECT * FROM sync_state").fetchone()
+            return dict(state) if state else None
 
     def save_state(self, room, link, source_generation, captured_ns, high_water, reconciled, origin_token,
                    source_counter=None, receipt_hash=None):
+        self._require_write()
         self.db.execute("""INSERT INTO sync_state VALUES (1,?,?,?,?,?,?,?,?,?)
             ON CONFLICT(singleton) DO UPDATE SET source_generation=excluded.source_generation,
             captured_ns=excluded.captured_ns, high_water=excluded.high_water,
@@ -267,6 +332,7 @@ class Repository:
              source_counter, receipt_hash))
 
     def emit(self, kind, uid, version, change, *, state_proof=None):
+        self._require_write()
         timestamp = now()
         payload = encode(change)
         tail = self.db.execute("SELECT seq,chain FROM events WHERE generation=? ORDER BY seq DESC LIMIT 1",
@@ -277,6 +343,7 @@ class Repository:
             (self.generation, kind, uid, version, timestamp, payload, chain))
 
     def put(self, room, kind, row, source_generation, historical):
+        self._require_write()
         nid = native_id(row["id"])
         uid = object_id(room, kind, nid)
         # Preserve full source evidence. The normalized projection separates relations.
@@ -319,6 +386,7 @@ class Repository:
         return True
 
     def note_absent(self, kind, seen):
+        self._require_write()
         rows = self.db.execute("SELECT id,native_id,version FROM objects WHERE kind=? AND presence='observed'", (kind,))
         count = 0
         for row in rows.fetchall():
@@ -357,9 +425,10 @@ class Repository:
                 self.refresh_legacy()
 
     def legacy_mapping(self, source, legacy_id):
-        rows = self.db.execute("SELECT object_id FROM legacy_assertions WHERE source=? AND legacy_id=?",
-                               (source, legacy_id)).fetchall()
-        return ("unique", rows[0][0]) if len(rows) == 1 else ("ambiguous" if rows else "unmapped", None)
+        with self._coordinated_read():
+            rows = self.db.execute("SELECT object_id FROM legacy_assertions WHERE source=? AND legacy_id=?",
+                                   (source, legacy_id)).fetchall()
+            return ("unique", rows[0][0]) if len(rows) == 1 else ("ambiguous" if rows else "unmapped", None)
 
     def translate(self, uid, locale, source_version, text):
         with self.transaction(write=True):
@@ -381,7 +450,8 @@ class Repository:
             return True
 
     def watermark(self):
-        return self.db.execute("SELECT coalesce(max(seq),0) FROM events WHERE generation=?", (self.generation,)).fetchone()[0]
+        with self._coordinated_read():
+            return self.db.execute("SELECT coalesce(max(seq),0) FROM events WHERE generation=?", (self.generation,)).fetchone()[0]
 
     def replay(self, generation, after, limit):
         if generation != self.generation:
@@ -510,6 +580,7 @@ class Repository:
             return uid
 
     def refresh_legacy(self, force=frozenset()):
+        self._require_write()
         rows = self.db.execute("SELECT * FROM legacy_views ORDER BY visible DESC,id").fetchall()
         if not rows:
             return set()
@@ -650,9 +721,7 @@ class Repository:
             record = control.read()
             if not record or not backup.is_file():
                 raise RepositoryError("Restore requires the existing witness and a backup")
-            sidecars = [path.with_name(path.name + suffix) for suffix in ("-wal", "-shm")]
-            if any(file.exists() or file.is_symlink() for file in sidecars):
-                raise RepositoryError("Close and recover the repository's SQLite sidecars before restore")
+            check_restore_sidecars(path)
             with tempfile.TemporaryDirectory(dir=path.parent) as tmp:
                 candidate = Path(tmp) / "restored"
                 fd = os.open(candidate, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
@@ -680,16 +749,23 @@ class Repository:
                 finally:
                     source.close()
                     target.close()
-                recover_rollback_journal(path, record)
-                record["pending"] = point
-                control.write(record)
+                # Do not open/close a separate fd on either inode after taking
+                # SQLite's POSIX locks. Flush the candidate before locking it.
                 with candidate.open("rb") as handle:
                     os.fsync(handle.fileno())
-                os.replace(candidate, path)
-                directory = os.open(path.parent, os.O_RDONLY)
-                try:
-                    os.fsync(directory)
-                finally:
-                    os.close(directory)
-                control.verify(point)
+                recovered_point = recover_rollback_journal(path, record)
+                with ExitStack() as locks:
+                    locks.enter_context(lock_restore_database(
+                        path, allow_missing=recovered_point is None, recovered_point=recovered_point
+                    ))
+                    locks.enter_context(lock_restore_database(candidate))
+                    record["pending"] = point
+                    control.write(record)
+                    os.replace(candidate, path)
+                    directory = os.open(path.parent, os.O_RDONLY)
+                    try:
+                        os.fsync(directory)
+                    finally:
+                        os.close(directory)
+                    control.verify(point)
         return generation

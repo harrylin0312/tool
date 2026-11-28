@@ -574,10 +574,11 @@ with Repository(sys.argv[1]) as r, r.transaction(write=True):
             valid["pending"] = valid["committed"]
             self.repo.witness.write(valid)
         self.assertTrue(self.repo.verify())
+        seq = self.repo.watermark()
         with self.repo.witness.locked():
             valid = self.repo.witness.read()
             self.assertIsNone(valid["pending"])
-            valid["pending"] = {**valid["committed"], "seq": self.repo.watermark()+1}
+            valid["pending"] = {**valid["committed"], "seq": seq+1}
             self.repo.witness.write(valid)
         with self.assertRaises(WitnessError):
             self.repo.snapshot()
