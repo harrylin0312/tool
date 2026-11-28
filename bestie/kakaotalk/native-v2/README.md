@@ -33,7 +33,7 @@ python3 -m core restore --repo "$REPO" --witness "$WITNESS" --backup "$BACKUP"
 
 status 提供健康水位及來源信任分類。snapshot 可輸出原子私有投影，events 可檢視失效提示，changes/page 用在可一致套用的版本投影。請見 [事件協定](../docs/architecture/EVENT-PROTOCOL.md)。資料檔為 0600，CLI 僅回報摘要。歷史顯示層可使用 Repository.preserve_legacy 與 publish_legacy，來源識別應用無私人資料的本機代號。
 
-備份只包含旁路 SQLite。見證檔是私人可信狀態，包含擷取簽章材料，應留在獨立持久位置。保留目前見證檔，檢查並退出所有 reader/writer 後，才執行明確 restore。還原會旋轉世代，舊客戶端需完整投影。若檔案與見證不符，停止操作並從已知備份復原。若見證遺失，不能自動從舊檔恢復同一世代。
+備份只包含旁路 SQLite。見證檔是私人可信狀態，包含擷取簽章材料，應留在獨立持久位置。保留目前見證檔，檢查並退出所有 reader/writer 後，才執行明確 restore。還原會旋轉世代，舊客戶端需完整投影。崩潰後若只留下旁路 rollback journal，可執行正式 restore。SQLite 自行完成回滾或清理，並核對恢復點是否符合見證，之後才換入備份與新世代。WAL 或 SHM 尚在使用時仍會拒絕。若檔案與見證不符，停止操作並確認備份及見證狀態。若見證遺失，不能自動從舊檔恢復同一世代。
 
 已知的 V1–V3 P2 旁路資料庫須先做私人備份，再用 `adopt --repo "$REPO" --witness "$WITNESS"`。adopt 保留 ID、映射和譯文並旋轉世代。舊客戶端需重新取得完整投影。既有來源憑證保留在本機，P2.1 需新增一次 bind-source 才能日常擷取。
 
@@ -44,3 +44,5 @@ python3 -m unittest discover -s tests -v
 ```
 
 設定 `KAKAO_TEST_SQLCIPHER` 和 `KAKAO_TEST_SQLCIPHER_CLI` 指向已核准的動態庫和 CLI，可執行兩項合成加密測試。其他測試使用隔離 SQLite。[P2.1 修正報告](../docs/research/P2-QA-REMEDIATION.md)
+
+[P2.2 最小缺陷修正](../docs/research/P2.2-REMEDIATION.md)

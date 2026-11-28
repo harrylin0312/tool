@@ -6,8 +6,8 @@
 | --- | --- | --- |
 | P0 原文批次發布器 | 程式已合併；正式快照首次遷移待辦 | 兩輪 QA 已通過。首次正式遷移須可信 CSV、正式 linkedom、隔離驗證、獨立 commit；不得用合成測試資料。 |
 | P1 本機擷取研究 | R1 完成；R2 已唯讀取得 50 則原生樣本，6 組回覆與快照一致，畫面待補驗，見 [PoC](research/LOCAL-EXTRACTION-POC.md)；R3 已盤點原生資料及 Threads 並比對 CSV／HTML，R4 完成原生副本與合成可靠性驗證，實際 App 共用連線、生命週期及畫面仍待驗。見 [增量研究](research/INCREMENTAL-EXTRACTION-REPORT.md)。見 [原生盤點](research/NATIVE-DATA-AUDIT.md) 及 [研究報告](research/LOCAL-EXTRACTION-REPORT.md) | [R1–R4](RESEARCH.md)；完成候選審查、Mac 實機 PoC、正確性及效能測量，決定原生資料讀取是否可採用。 |
-| P2 統一資料模型與來源 adapter | P2 已完成首輪獨立 QA；P2.1 五項缺陷已修正，40 項正式與新增測試及真實副本 CLI 通過，待第二輪獨立 QA。見 [P2.1 修正](research/P2-QA-REMEDIATION.md)。見 [P2 驗收](research/P2-IMPLEMENTATION-REPORT.md) 與 [V2 架構](architecture/V2-ARCHITECTURE.md) | 以可靠來源建立穩定內部 ID、跨來源映射、增量游標、回覆證據、事件與時間精度，舊 ID/譯文/回覆不退化；可重跑。 |
-| P3 批次自動化及備援 | 第二輪 QA 完成且擁有者確認後開工 | 原文先入庫、回覆及翻譯獨立更新；經確認的 adapter 接上快照發布，手機 TXT 備援及必要 OCR 補查通過回歸。 |
+| P2 統一資料模型與來源 adapter | P2 已完成首輪獨立 QA；P2.1 五項缺陷已修正，40 項正式與新增測試及真實副本 CLI 通過，第二輪發現的兩項缺陷已於 P2.2 修正，46 項測試通過，待獨立複驗。見 [P2.2 修正](research/P2.2-REMEDIATION.md)。見 [P2.1 修正](research/P2-QA-REMEDIATION.md)。見 [P2 驗收](research/P2-IMPLEMENTATION-REPORT.md) 與 [V2 架構](architecture/V2-ARCHITECTURE.md) | 以可靠來源建立穩定內部 ID、跨來源映射、增量游標、回覆證據、事件與時間精度，舊 ID/譯文/回覆不退化；可重跑。 |
+| P3 批次自動化及備援 | P2.2 獨立複驗且擁有者確認後開工 | 原文先入庫、回覆及翻譯獨立更新；經確認的 adapter 接上快照發布，手機 TXT 備援及必要 OCR 補查通過回歸。 |
 | P4 整合驗收 | 待辦 | 真實資料、跨批次、版本更新、故障保護、Safari 實機、獨立 QA；限制及未測範圍明載。 |
 | P5 即時串流（最後） | 待辦 | 穩定資料來源後才研究增量事件、SQLite 交易、SSE／其他傳輸、私人 HTTPS、重連補抓、睡眠與離線；GitHub 加密快照保留作離線備援。 |
 

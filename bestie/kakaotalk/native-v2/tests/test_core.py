@@ -432,17 +432,18 @@ with Repository(sys.argv[1]) as r, r.transaction(write=True):
     def test_duplicate_history_suppression_and_mapping_removal(self):
         self.load()
         uid = self.reviewed_history("legacy a", "m1")
-        self.reviewed_history("legacy b", "m2")
+        alias = self.reviewed_history("legacy b", "m2")
         self.assertEqual([x["id"] for x in self.repo.snapshot()["legacy"]], [uid])
-        self.reviewed_history("legacy c", "m3", body="message", author="fixture author",
-                              when="1970-01-01T00:08:20+00:00", precision="second")
-        self.assertEqual(len(self.repo.snapshot()["legacy"]), 1)
+        ambiguous = self.reviewed_history("legacy c", "m3", body="message", author="fixture author",
+                                          when="1970-01-01T00:08:20+00:00", precision="second")
+        self.assertEqual({x["id"] for x in self.repo.snapshot()["legacy"]}, {uid, ambiguous})
         before = self.repo.watermark()
         self.repo.map_legacy("legacy a", "m1", object_id("10", "message", FIRST))
         delta = self.repo.changes(self.repo.generation, before)
         self.assertTrue(delta["replace_legacy_and_mappings"])
         self.assertTrue(all(x["value"].get("id") != uid for x in delta["records"]))
-        self.assertEqual(len(self.repo.snapshot()["legacy"]), 0)
+        self.assertEqual({x["id"]:x["data"]["mapping_state"] for x in self.repo.snapshot()["legacy"]},
+                         {alias: "ambiguous", ambiguous: "ambiguous"})
 
     def test_native_arrival_suppresses_previously_published_legacy_row(self):
         self.load()

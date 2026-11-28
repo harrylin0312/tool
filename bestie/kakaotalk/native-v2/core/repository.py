@@ -1,5 +1,6 @@
 """Sidecar storage and transactionally appended replay log."""
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
+from collections import defaultdict
 from datetime import datetime, timezone
 import unicodedata
 import json
@@ -89,6 +90,50 @@ def safe_path(path):
     return path
 
 
+def database_point(db):
+    meta = dict(db.execute("SELECT key,value FROM metadata"))
+    generation = meta["generation"]
+    tail = db.execute("SELECT * FROM events WHERE generation=? ORDER BY seq DESC LIMIT 1",
+                      (generation,)).fetchone()
+    state = db.execute("SELECT * FROM sync_state").fetchone()
+    return {"repository": meta["repository_id"], "generation": generation,
+            "seq": tail["seq"] if tail else 0, "tail": fingerprint(dict(tail)) if tail else None,
+            "sync": fingerprint(dict(state) if state else None)}
+
+
+def recover_rollback_journal(path, record):
+    journal = path.with_name(path.name + "-journal")
+    if not journal.exists() and not journal.is_symlink():
+        return
+    if not path.is_file():
+        raise RepositoryError("Rollback journal has no repository database")
+    safe_path(journal)
+    with closing(sqlite3.connect(path.as_uri() + "?mode=rw", uri=True,
+                                 isolation_level=None, timeout=0)) as db:
+        db.row_factory = sqlite3.Row
+        # SQLite owns journal recovery. No state is exposed from this connection.
+        db.execute("BEGIN EXCLUSIVE")
+        try:
+            version = db.execute("PRAGMA user_version").fetchone()[0]
+            identity = db.execute("SELECT value FROM metadata WHERE key='format'").fetchone()
+            if version != len(MIGRATIONS) or not identity or identity[0] != "kakao-native-v2":
+                raise RepositoryError("Journal recovery requires a recognized repository")
+            point = database_point(db)
+            if point not in (record["committed"], record["pending"]):
+                raise WitnessError("Recovered repository does not match either witnessed endpoint")
+            # A cold journal may survive read-only opening. A same-value header transaction
+            # lets SQLite clean it up through ordinary commit without changing the event state.
+            db.execute(f"PRAGMA user_version={version}")
+            if database_point(db) != point:
+                raise WitnessError("Recovery changed the witnessed event state")
+            db.commit()
+        except BaseException:
+            db.rollback()
+            raise
+    if journal.exists():
+        raise RepositoryError("SQLite did not finish rollback journal recovery")
+
+
 class Repository:
     def __init__(self, path, initialize=False, *, witness=None, adopt=False):
         self.path = safe_path(Path(path))
@@ -127,6 +172,15 @@ class Repository:
                 self.db.close()
                 raise
 
+        if self._meta("legacy_projection_policy") != "2":
+            try:
+                with self.transaction(write=True):
+                    self.refresh_legacy()
+                    self.db.execute("INSERT OR REPLACE INTO metadata VALUES ('legacy_projection_policy','2')")
+            except BaseException:
+                self.db.close()
+                raise
+
     def _identity(self):
         st = self.path.stat()
         return st.st_dev, st.st_ino
@@ -136,13 +190,7 @@ class Repository:
         return row[0] if row else None
 
     def _point(self):
-        generation = self._meta("generation")
-        r = self.db.execute("SELECT * FROM events WHERE generation=? ORDER BY seq DESC LIMIT 1",
-                            (generation,)).fetchone()
-        state = self.state()
-        return {"repository": self._meta("repository_id"), "generation": generation,
-                "seq": r["seq"] if r else 0, "tail": fingerprint(dict(r)) if r else None,
-                "sync": fingerprint(state)}
+        return database_point(self.db)
 
     def __enter__(self):
         return self
@@ -449,6 +497,8 @@ class Repository:
                     "source_kind": row[0], "source_ref": fingerprint([source]),
                     "mapping_state": "unmapped", "confidence": confidence}
             current = self.db.execute("SELECT data,version,visible FROM legacy_views WHERE id=?", (uid,)).fetchone()
+            if current:
+                data["mapping_state"] = json.loads(current["data"])["mapping_state"]
             encoded = encode(data)
             if current and current["data"] == encoded:
                 return uid
@@ -483,34 +533,79 @@ class Repository:
 
         authors = {r[0]: json.loads(r[1]).get("name") for r in self.db.execute(
             "SELECT native_id,data FROM objects WHERE kind='author'")}
-        matches = {}
-        for r in self.db.execute("SELECT data FROM objects WHERE kind='message'"):
-            m = json.loads(r[0])
+        native = defaultdict(list)
+        for r in self.db.execute("SELECT id,data FROM objects WHERE kind='message'"):
+            m = json.loads(r["data"])
             key = match_key(m.get("body"), authors.get(m.get("author")))
             t = m.get("sent_at")
-            matches.setdefault(key, []).append((t, t + 1) if t is not None else (None, None))
-        changed = set()
-        reviewed = []
+            native[key].append((r["id"], (t, t + 1) if t is not None else (None, None)))
+        claims = defaultdict(set)
+        explicit = defaultdict(set)
+        reviewed = {r["id"]: r for r in rows}
+        for r in self.db.execute("""SELECT v.id,a.object_id FROM legacy_views v JOIN legacy_assertions a
+                ON a.source=v.source AND a.legacy_id=v.legacy_id"""):
+            claims[r["object_id"]].add(r["id"])
+            explicit[r["id"]].add(r["object_id"])
+        confirmed = {uid: next(iter(ids)) for uid, ids in explicit.items()
+                     if len(ids) == 1 and len(claims[next(iter(ids))]) == 1}
+        groups = defaultdict(list)
+        candidates = defaultdict(set)
+        known_time = {}
         for row in rows:
+            uid = row["id"]
             data = json.loads(row["data"])
             key = match_key(data["body"], data["author"])
             window = interval(data["timestamp"], data["precision"])
-            mapping, _ = self.legacy_mapping(row["source"], row["legacy_id"])
-            reviewed.append((row, key, window, mapping))
-            if mapping != "unmapped":
-                # A mapped/ambiguous record also suppresses its duplicate legacy aliases.
-                matches.setdefault(key, []).append(window)
-        for row, key, window, mapping in reviewed:
-            visible = mapping == "unmapped" and not any(present(window, prev) for prev in matches.get(key, []))
-            if visible:
-                matches.setdefault(key, []).append(window)
-            if visible != bool(row["visible"]) or (row["id"] in force and visible):
+            known_time[uid] = window[0] is not None
+            groups[key].append((uid, window))
+            for target, target_window in native[key]:
+                if present(window, target_window):
+                    known_time[target] = target_window[0] is not None
+                    candidates[uid].add(target)
+                    candidates[target].add(uid)
+        for group in groups.values():
+            for i, (uid, window) in enumerate(group):
+                for other, other_window in group[i + 1:]:
+                    if reviewed[uid]["source"] != reviewed[other]["source"] and present(window, other_window):
+                        candidates[uid].add(other)
+                        candidates[other].add(uid)
+
+        state = {uid: "unmapped" for uid in reviewed}
+        for uid in reviewed:
+            if uid in confirmed:
+                state[uid] = "matched"
+                continue
+            options = candidates[uid]
+            if uid in explicit:
+                state[uid] = "ambiguous"
+            elif len(options) == 1:
+                other = next(iter(options))
+                if (candidates[other] == {uid} and other not in explicit and other not in claims
+                        and known_time[uid] and known_time[other]):
+                    # The existing visible row wins a unique legacy-only pair.
+                    if other not in reviewed or (not reviewed[other]["visible"], other) < (not reviewed[uid]["visible"], uid):
+                        state[uid] = "matched"
+                else:
+                    state[uid] = "ambiguous"
+            elif options:
+                state[uid] = "ambiguous"
+
+        changed = set()
+        for row in rows:
+            uid = row["id"]
+            data = json.loads(row["data"])
+            previous = data["mapping_state"]
+            data["mapping_state"] = state[uid]
+            visible = state[uid] != "matched"
+            if visible != bool(row["visible"]) or (visible and (uid in force or previous != state[uid])):
                 version = row["version"] + 1
-                self.db.execute("UPDATE legacy_views SET version=?,visible=? WHERE id=?",
-                                (version, int(visible), row["id"]))
-                self.emit("legacy.projection_updated", row["id"], version, {"visible": visible},
-                          state_proof=fingerprint([row["data"]]))
-                changed.add(row["id"])
+                self.db.execute("UPDATE legacy_views SET version=?,visible=?,data=? WHERE id=?",
+                                (version, int(visible), encode(data), uid))
+                self.emit("legacy.projection_updated", uid, version, {"visible": visible},
+                          state_proof=fingerprint(data))
+                changed.add(uid)
+            elif previous != state[uid]:
+                self.db.execute("UPDATE legacy_views SET data=? WHERE id=?", (encode(data), uid))
         return changed
 
     def statistics(self):
@@ -555,7 +650,8 @@ class Repository:
             record = control.read()
             if not record or not backup.is_file():
                 raise RepositoryError("Restore requires the existing witness and a backup")
-            if any(path.with_name(path.name + suffix).exists() for suffix in ("-wal", "-shm", "-journal")):
+            sidecars = [path.with_name(path.name + suffix) for suffix in ("-wal", "-shm")]
+            if any(file.exists() or file.is_symlink() for file in sidecars):
                 raise RepositoryError("Close and recover the repository's SQLite sidecars before restore")
             with tempfile.TemporaryDirectory(dir=path.parent) as tmp:
                 candidate = Path(tmp) / "restored"
@@ -584,6 +680,7 @@ class Repository:
                 finally:
                     source.close()
                     target.close()
+                recover_rollback_journal(path, record)
                 record["pending"] = point
                 control.write(record)
                 with candidate.open("rb") as handle:
