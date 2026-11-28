@@ -61,3 +61,7 @@
 ## 檔案管理與用量
 
 接手固定版更新、回覆掃描或容量清理前，先查閱[工作流程與容量基準](./storage-workflow.md)。內含已量測的檔案大小、下載量、保留位置及每輪記帳方式。
+
+## 原文發布候選：跨批次回覆
+
+`live/publish-original.mjs` 使用完整 CSV 及 `reply-mapping.mjs` 核對歷史原文，不以列號推算舊 ID。新訊息保存來源列號、完整時間及單列雜湊，歷史僅在唯一匹配後補上。完整前綴雜湊於首次遷移後用於防止後續歷史內容變動。原始快照的既有時間尾端 anchor 仍須先核對；未映射資料不得自動猜測。回覆審核檔仍接受原有 `[[[timestamp,name],[timestamp,name]]]` 格式，也可用 `[timestamp,name,body,rowNumber]` 消除 CSV 歧義（rowNumber 從 1 起算）；若 HTML 映射不唯一、舊引用衝突或順序不符，停止寫入並保留上一版，待人工確認。CSV 不含引用資料，不自動推測。執行 `node live/test-publish-original.mjs` 驗證純映射邏輯；正式發布前仍需以實際 linkedom 執行 CSV、驗證雙向跳轉及手機排版。不得提交 CSV、審核檔、明文或金鑰。

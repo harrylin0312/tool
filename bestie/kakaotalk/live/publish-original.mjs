@@ -3,6 +3,7 @@ import {createCipheriv, createDecipheriv, randomBytes, createHash} from 'node:cr
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {parseHTML} from 'linkedom';
+import {normalize,mapHistory,resolvePair} from './reply-mapping.mjs';
 
 // Run from this folder after installing linkedom. Pass the private link on stdin.
 // First run: node publish-original.mjs current.csv previous.csv
@@ -31,7 +32,10 @@ const rows=csv(current);
 const old=previous ? csv(previous) : null;
 const count=old?.length ?? Number(main.dataset.exportCount);
 if (!count || rows.length<count || anchor(rows.slice(0,count))!==(old ? anchor(old) : main.dataset.exportAnchor)) throw Error('匯出檔未銜接上次進度');
-if (old && (old.some((r,i)=>r.Date!==rows[i].Date) || old.at(-1).Message!==rows[count-1].Message)) throw Error('歷史紀錄未對齊');
+if(rows.some(r=>typeof r.User!=='string'||typeof r.Message!=='string'||!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(r.Date)))throw Error('CSV 欄位或時間格式錯誤');
+const digest=rs=>createHash('sha256').update(JSON.stringify(rs.map(r=>[r.Date,r.User,r.Message]))).digest('hex');
+if(old && digest(old)!==digest(rows.slice(0,count)))throw Error('歷史紀錄未對齊');
+if(!old && main.dataset.exportDigest && main.dataset.exportDigest!==digest(rows.slice(0,count)))throw Error('歷史 CSV 內容已變更');
 
 const esc=s=>s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 if(old){
@@ -79,46 +83,105 @@ for(const article of document.querySelectorAll('article')){
     if(child.matches('details.replies')){content.append(child);repairedReplies++}
   }
 }
-if(!old && count===rows.length && !repairedAvatars && !repairedReplies){
+// A legacy snapshot has no row metadata. Match exact text, name and time.
+function originalText(node){
+  return Array.from(node.childNodes).map(n=>n.nodeType===3?n.textContent:n.tagName==='BR'?'\n':originalText(n)).join('');
+}
+function descriptor(a){
+  return {id:a.id,name:a.querySelector('.name').textContent,
+    body:originalText(a.querySelector('.original')),day:a.dataset.day,clock:a.dataset.clock,
+    stamp:(a.querySelector('time')?.getAttribute('datetime')||'').slice(0,19).replace('T',' ')};
+}
+const history=Array.from(main.querySelectorAll('article[id]'));
+const mapping=mapHistory(rows.slice(0,count),history.map(descriptor));
+const mappedIds=new Set(mapping.values());
+let metadataChanges=0;
+function setAttr(node,key,value){
+  if(node.getAttribute(key)!==value){node.setAttribute(key,value);metadataChanges++}
+}
+function remember(node,rowNo){
+  const row=rows[rowNo-1];
+  setAttr(node,'data-source-row',String(rowNo));
+  setAttr(node,'data-source-time',row.Date);
+  setAttr(node,'data-source-hash',digest([row]));
+}
+for(const a of history){
+  const rowNo=Number(a.getAttribute('data-source-row'));
+  if(rowNo){
+    if(!Number.isInteger(rowNo)||rowNo>count||rowNo<1||a.getAttribute('data-source-hash')!==digest([rows[rowNo-1]]))throw Error('來源映射驗證失敗');
+    const d=descriptor(a),r=rows[rowNo-1];
+    if(d.name!==r.User||normalize(d.body)!==normalize(r.Message)||d.day!==r.Date.slice(0,10)||d.clock!==r.Date.slice(11,16)||(d.stamp&&d.stamp!==r.Date))throw Error('來源映射內容不符');
+    if((mapping.has(rowNo)&&mapping.get(rowNo)!==a.id)||(mappedIds.has(a.id)&&mapping.get(rowNo)!==a.id))throw Error('來源映射衝突');
+    mapping.set(rowNo,a.id);mappedIds.add(a.id);
+  }
+}
+for(const [rowNo,id] of mapping)remember(document.getElementById(id),rowNo);
+for(const a of history){
+  for(const n of a.querySelectorAll('.name,.original,.avatar:not(.uji)'))setAttr(n,'translate','no');
+  const avatar=a.querySelector('.avatar');if(avatar)setAttr(avatar,'aria-hidden','true');
+  const source=a.getAttribute('data-source-time');
+  if(source)setAttr(a.querySelector('time'),'datetime',source.replace(' ','T')+'+08:00');
+}
+if(!old&&count===rows.length&&!repairedAvatars&&!repairedReplies&&!metadataChanges&&!process.env.REVIEWED_PAIRS&&main.dataset.exportDigest===digest(rows)&&main.dataset.snapshotThrough===rows.at(-1).Date.replace(' ','T')+'+08:00'){
   console.log('沒有新增訊息或結構修復');process.exit(0);
 }
 const latest=document.querySelector('#latest');
 let id=Math.max(...Array.from(document.querySelectorAll('[id^="m"]'),n=>Number(n.id.slice(1))).filter(Number.isFinite));
-const firstNewId=id+1;
+let rowNo=count;
 let day=rows[count-1].Date.slice(0,10);
 const avatar=document.querySelector('.avatar.uji')?.outerHTML;
 for(const {Date:stamp,User:name,Message:message} of rows.slice(count)){
   const date=stamp.slice(0,10), time=stamp.slice(11,16), body=esc(message).replace(/https?:\/\/[^\s<>]+/g,url=>'<a href="'+url+'" target="_blank" rel="noopener noreferrer">'+url+'</a>').replaceAll('\n','<br>');
   if(date!==day){latest.insertAdjacentHTML('beforebegin','<p class="notice">'+esc(date)+'</p>');day=date}
   const attrs='id="m'+(++id)+'" data-day="'+esc(date)+'" data-clock="'+esc(time)+'"';
+  rowNo++;
   const notice=[name+' joined this chatroom.',name+' left this chatroom.','The message has been deleted.'].includes(message);
   const icon=name==='유디❤️' && avatar ? avatar : '<span class="avatar" style="background:'+avatarColor(name)+'" aria-hidden="true" translate="no">'+esc(Array.from(name)[0]||'')+'</span>';
-  latest.insertAdjacentHTML('beforebegin',notice ? '<p class="notice" '+attrs+'>'+body+' · '+esc(time)+'</p>' : '<article '+attrs+'>'+icon+'<div><div class="name">'+esc(name)+'</div><div class="line"><div class="bubble"><div class="original">'+body+'</div></div><time>'+esc(time)+'</time></div></div></article>');
+  latest.insertAdjacentHTML('beforebegin',notice ? '<p class="notice" translate="no" '+attrs+'>'+body+' · '+esc(time)+'</p>' : '<article '+attrs+'>'+icon+'<div><div class="name" translate="no">'+esc(name)+'</div><div class="line"><div class="bubble"><div class="original" translate="no">'+body+'</div></div><time datetime="'+esc(stamp.replace(' ','T')+'+08:00')+'">'+esc(time)+'</time></div></div></article>');
+  const inserted=document.getElementById('m'+id);remember(inserted,rowNo);
+  if(!notice)mapping.set(rowNo,inserted.id);
 }
-// Optional reviewed pairs use exact export timestamps. Ambiguous timestamps are rejected.
+// Reviewed selectors: [timestamp,name] or [timestamp,name,body,rowNumber].
+// Ambiguous or conflicting reviewed pairs abort before writing the snapshot.
+let addedPairs=0;
 if(process.env.REVIEWED_PAIRS){
-  const find=([stamp,name])=>{
-    const hits=rows.slice(count).flatMap((row,i)=>row.Date===stamp && row.User===name?[firstNewId+i]:[]);
-    if(hits.length!==1)throw Error('審核時間未唯一對應');
-    return document.getElementById('m'+hits[0]);
-  };
-  for(const [replyTime,originalTime] of JSON.parse(readFileSync(process.env.REVIEWED_PAIRS,'utf8'))){
-    const reply=find(replyTime),original=find(originalTime);
-    if(replyTime[0]<=originalTime[0])throw Error('引用順序錯誤');
-    const a=document.createElement('a');a.className='quote';a.setAttribute('href','#'+original.id);
-    const strong=document.createElement('strong');strong.textContent='↳ 回覆 '+original.querySelector('.name').textContent;
-    a.append(strong,document.createElement('br'),original.querySelector('.original').textContent);
-    reply.querySelector('.bubble').prepend(a);
+  const pairs=JSON.parse(readFileSync(process.env.REVIEWED_PAIRS,'utf8'));
+  if(!Array.isArray(pairs))throw Error('回覆審核檔格式錯誤');
+  for(const pair of pairs){
+    const [replyId,targetId]=resolvePair(rows,mapping,pair);
+    const reply=document.getElementById(replyId),original=document.getElementById(targetId);
+    const bubble=reply.querySelector('.bubble'),oldQuote=bubble.querySelector('.quote');
+    const href='#'+targetId;
+    if(oldQuote&&oldQuote.getAttribute('href')!==href)throw Error('既有引用衝突: '+replyId);
+    if(!oldQuote){
+      const a=document.createElement('a');a.className='quote';a.setAttribute('href',href);
+      a.setAttribute('data-reply-kind','quote');a.setAttribute('translate','no');
+      const strong=document.createElement('strong');strong.textContent='↳ 回覆 '+original.querySelector('.name').textContent;
+      a.append(strong,document.createElement('br'),originalText(original.querySelector('.original')));
+      bubble.prepend(a);addedPairs++;
+    }
     let list=original.querySelector('details.replies');
     if(!list){list=document.createElement('details');list.className='replies';list.innerHTML='<summary></summary><ul></ul>';original.querySelector('.line').parentElement.append(list)}
-    const back=document.createElement('a');back.setAttribute('href','#'+reply.id);
-    back.textContent=reply.querySelector('.name').textContent+' '+reply.dataset.clock;
-    const li=document.createElement('li');li.append(back);list.querySelector('ul').append(li);
-    list.querySelector('summary').textContent=list.querySelectorAll('li').length+' 則已收錄回覆';
+    const ul=list.querySelector('ul');
+    if(!ul)throw Error('既有回覆清單格式不符: '+targetId);
+    const links=Array.from(ul.querySelectorAll('a')).filter(a=>a.getAttribute('href')==='#'+replyId);
+    if(links.length>1)throw Error('既有反向連結重複: '+replyId);
+    if(!links.length){
+      const back=document.createElement('a');back.setAttribute('href','#'+replyId);
+      back.textContent=reply.querySelector('.name').textContent+' '+reply.dataset.clock;
+      const li=document.createElement('li');li.append(back);ul.append(li);addedPairs++;
+      list.querySelector('summary').textContent=list.querySelectorAll('li').length+' 則已收錄回覆';
+    }
+    if(reply.querySelector('.quote').getAttribute('href')!==href||!Array.from(ul.querySelectorAll('a')).some(a=>a.getAttribute('href')==='#'+replyId))throw Error('雙向回覆驗證失敗');
   }
+}
+if(!old&&count===rows.length&&!repairedAvatars&&!repairedReplies&&!metadataChanges&&!addedPairs&&main.dataset.exportDigest===digest(rows)&&main.dataset.snapshotThrough===rows.at(-1).Date.replace(' ','T')+'+08:00'){
+  console.log('沒有新增訊息或結構修復');process.exit(0);
 }
 main.dataset.exportCount=String(rows.length);
 main.dataset.exportAnchor=anchor(rows);
+main.dataset.exportDigest=digest(rows);
+main.dataset.snapshotThrough=rows.at(-1).Date.replace(' ','T')+'+08:00';
 document.querySelector('.top small').textContent='原文 · 截至 '+rows.at(-1).Date.slice(0,16)+'（台灣時間）';
 for(const article of document.querySelectorAll('article')){
   const node=article.querySelector('.avatar:not(.uji)');
