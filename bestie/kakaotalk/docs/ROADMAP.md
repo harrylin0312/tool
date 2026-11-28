@@ -5,7 +5,7 @@
 | 階段 | 狀態 | 完成條件 |
 | --- | --- | --- |
 | P0 原文批次發布器 | 程式已合併；正式快照首次遷移待辦 | 兩輪 QA 已通過。首次正式遷移須可信 CSV、正式 linkedom、隔離驗證、獨立 commit；不得用合成測試資料。 |
-| P1 本機擷取研究 | R1 完成；R2 合成 WAL 與 ID 測試通過，真實樣本待授權，見 [PoC](research/LOCAL-EXTRACTION-POC.md)；R3/R4 待測。見 [研究報告](research/LOCAL-EXTRACTION-REPORT.md) | [R1–R4](RESEARCH.md)；完成候選審查、Mac 實機 PoC、正確性及效能測量，決定原生資料讀取是否可採用。 |
+| P1 本機擷取研究 | R1 完成；R2 合成 WAL 與 ID 測試通過，SQLCipher 合成加密測試通過，正式資料庫身份匹配待解，見 [PoC](research/LOCAL-EXTRACTION-POC.md)；R3/R4 待測。見 [研究報告](research/LOCAL-EXTRACTION-REPORT.md) | [R1–R4](RESEARCH.md)；完成候選審查、Mac 實機 PoC、正確性及效能測量，決定原生資料讀取是否可採用。 |
 | P2 統一資料模型與來源 adapter | 待辦 | 以可靠來源建立穩定內部 ID、跨來源映射、增量游標、回覆證據、事件與時間精度，舊 ID/譯文/回覆不退化；可重跑。 |
 | P3 批次自動化及備援 | 待辦 | 原文先入庫、回覆及翻譯獨立更新；經確認的 adapter 接上快照發布，手機 TXT 備援及必要 OCR 補查通過回歸。 |
 | P4 整合驗收 | 待辦 | 真實資料、跨批次、版本更新、故障保護、Safari 實機、獨立 QA；限制及未測範圍明載。 |
