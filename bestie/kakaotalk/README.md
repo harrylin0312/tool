@@ -6,6 +6,10 @@
 
 提供指定、已登入的 KakaoTalk Open Chat 的原文、繁中翻譯及可核對的回覆關係，手機可直接開啟私人解鎖網址。GitHub Pages 加密快照是目前可用方式；**下一代優先採用 KakaoTalk 原生資料**。先在平行本機資料庫驗證擷取與同步，同一套模組會供批次發布和未來串流使用。
 
+## V2 開發分支
+
+P2 旁路共用核心已實作，候選基準為 `1071dd72474564cab85bc32b5f49cd49ceb24f5a`。在 `dev/kakaotalk-native-v2` 驗收，正式原文與發布流程仍採 main 的既有版本。新三層架構、CLI 與驗收證據見下表。
+
 ## 現況（以實際正式快照與 QA 區分）
 
 | 項目 | 狀態 |
@@ -26,6 +30,9 @@
 
 | 文件 | 用途 |
 | --- | --- |
+| [V2 架構](docs/architecture/V2-ARCHITECTURE.md) | Mac 即時、GitHub Pages 與客戶端離線三層，以及共用擷取核心。 |
+| [V2 資料模型](docs/architecture/DATA-MODEL.md)／[事件協定](docs/architecture/EVENT-PROTOCOL.md) | Repository、穩定 ID、可重播事件與世代。 |
+| [V2 本機操作](native-v2/README.md)／[P2 驗收報告](docs/research/P2-IMPLEMENTATION-REPORT.md) | CLI、測試指令、實機副本量測及後續驗收範圍。 |
 | [docs/WORKFLOW.md](docs/WORKFLOW.md) | 現行擷取、回覆審核、原文及翻譯發布、加密、驗證與回退操作。 |
 | [docs/RESEARCH.md](docs/RESEARCH.md) | 本機資料庫擷取研究、候選工具、驗證方法與備援。 |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | 依序開發的里程碑、阻礙、驗收條件、代理分工。 |
