@@ -32,7 +32,7 @@ const old=previous ? csv(previous) : null;
 const count=old?.length ?? Number(main.dataset.exportCount);
 if (!count || rows.length<count || anchor(rows.slice(0,count))!==(old ? anchor(old) : main.dataset.exportAnchor)) throw Error('匯出檔未銜接上次進度');
 if (old && (old.some((r,i)=>r.Date!==rows[i].Date) || old.at(-1).Message!==rows[count-1].Message)) throw Error('歷史紀錄未對齊');
-if (!old && count===rows.length){console.log('沒有新增訊息');process.exit(0)}
+
 const esc=s=>s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 if(old){
   for(const n of document.querySelectorAll('.translation,.quote-translation,.quote-language'))n.remove();
@@ -40,6 +40,47 @@ if(old){
     const br=n.querySelector('br');
     if(br && Number(n.id.slice(1))>=446){while(br.nextSibling)br.nextSibling.remove();br.remove();n.append(' · '+n.dataset.clock)}
   }
+}
+// Reuse the existing palette and the first known color for each display name.
+const avatarColors=new Map(), paletteSet=new Set();
+const colorPattern=/background:\s*(#[0-9a-fA-F]{6})\b/;
+for(const article of document.querySelectorAll('article')){
+  const node=article.querySelector('.avatar:not(.uji)');
+  const name=article.querySelector('.name')?.textContent;
+  const color=node?.getAttribute('style')?.match(colorPattern)?.[1];
+  if(color && name!==undefined){
+    paletteSet.add(color);
+    if(!avatarColors.has(name))avatarColors.set(name,color);
+  }
+}
+const palette=[...paletteSet].sort();
+if(!palette.length)palette.push('#a9c9f8','#f0d8a3','#cec5eb');
+function avatarColor(name){
+  if(!avatarColors.has(name)){
+    let hash=2166136261;
+    for(const ch of name)hash=Math.imul(hash^ch.codePointAt(0),16777619);
+    avatarColors.set(name,palette[(hash>>>0)%palette.length]);
+  }
+  return avatarColors.get(name);
+}
+// Repair legacy markup without changing message IDs, content or reply links.
+let repairedAvatars=0,repairedReplies=0;
+for(const article of document.querySelectorAll('article')){
+  const node=article.querySelector('.avatar:not(.uji)');
+  const name=article.querySelector('.name')?.textContent;
+  const content=Array.from(article.children).find(n=>n.tagName==='DIV' && n.querySelector('.line'));
+  if(!content)throw Error('訊息內容容器遺失: '+article.id);
+  if(node && name!==undefined && !colorPattern.test(node.getAttribute('style')||'')){
+    const existing=node.getAttribute('style')||'';
+    node.setAttribute('style',existing+(existing && !existing.endsWith(';')?';':'')+'background:'+avatarColor(name));
+    repairedAvatars++;
+  }
+  for(const child of Array.from(article.children)){
+    if(child.matches('details.replies')){content.append(child);repairedReplies++}
+  }
+}
+if(!old && count===rows.length && !repairedAvatars && !repairedReplies){
+  console.log('沒有新增訊息或結構修復');process.exit(0);
 }
 const latest=document.querySelector('#latest');
 let id=Math.max(...Array.from(document.querySelectorAll('[id^="m"]'),n=>Number(n.id.slice(1))).filter(Number.isFinite));
@@ -51,7 +92,7 @@ for(const {Date:stamp,User:name,Message:message} of rows.slice(count)){
   if(date!==day){latest.insertAdjacentHTML('beforebegin','<p class="notice">'+esc(date)+'</p>');day=date}
   const attrs='id="m'+(++id)+'" data-day="'+esc(date)+'" data-clock="'+esc(time)+'"';
   const notice=[name+' joined this chatroom.',name+' left this chatroom.','The message has been deleted.'].includes(message);
-  const icon=name==='유디❤️' && avatar ? avatar : '<span class="avatar">'+esc(Array.from(name)[0]||'')+'</span>';
+  const icon=name==='유디❤️' && avatar ? avatar : '<span class="avatar" style="background:'+avatarColor(name)+'" aria-hidden="true" translate="no">'+esc(Array.from(name)[0]||'')+'</span>';
   latest.insertAdjacentHTML('beforebegin',notice ? '<p class="notice" '+attrs+'>'+body+' · '+esc(time)+'</p>' : '<article '+attrs+'>'+icon+'<div><div class="name">'+esc(name)+'</div><div class="line"><div class="bubble"><div class="original">'+body+'</div></div><time>'+esc(time)+'</time></div></div></article>');
 }
 // Optional reviewed pairs use exact export timestamps. Ambiguous timestamps are rejected.
@@ -69,7 +110,7 @@ if(process.env.REVIEWED_PAIRS){
     a.append(strong,document.createElement('br'),original.querySelector('.original').textContent);
     reply.querySelector('.bubble').prepend(a);
     let list=original.querySelector('details.replies');
-    if(!list){list=document.createElement('details');list.className='replies';list.innerHTML='<summary></summary><ul></ul>';original.append(list)}
+    if(!list){list=document.createElement('details');list.className='replies';list.innerHTML='<summary></summary><ul></ul>';original.querySelector('.line').parentElement.append(list)}
     const back=document.createElement('a');back.setAttribute('href','#'+reply.id);
     back.textContent=reply.querySelector('.name').textContent+' '+reply.dataset.clock;
     const li=document.createElement('li');li.append(back);list.querySelector('ul').append(li);
@@ -79,10 +120,15 @@ if(process.env.REVIEWED_PAIRS){
 main.dataset.exportCount=String(rows.length);
 main.dataset.exportAnchor=anchor(rows);
 document.querySelector('.top small').textContent='原文 · 截至 '+rows.at(-1).Date.slice(0,16)+'（台灣時間）';
+for(const article of document.querySelectorAll('article')){
+  const node=article.querySelector('.avatar:not(.uji)');
+  if(node && !colorPattern.test(node.getAttribute('style')||''))throw Error('頭像背景缺失: '+article.id);
+  if(Array.from(article.children).some(n=>n.matches('details.replies')))throw Error('回覆清單容器錯誤: '+article.id);
+}
 const ids=Array.from(document.querySelectorAll('[id]'),n=>n.id);
 if(new Set(ids).size!==ids.length || Array.from(main.querySelectorAll('a[href^="#"]')).some(a=>!ids.includes(a.getAttribute('href').slice(1))))throw Error('訊息編號或引用驗證失敗');
 const iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',key,iv);
 const encrypted=Buffer.concat([cipher.update(document.toString(),'utf8'),cipher.final(),cipher.getAuthTag()]);
 const result=shell.replace(pattern,"const snapshot = { nonce: '"+iv.toString('base64')+"', ciphertext: '"+encrypted.toString('base64')+"' };").replace('<title>KakaoTalk 韓中對照</title>','<title>KakaoTalk 原文</title>');
 mkdirSync(new URL('.',out),{recursive:true});const temp=fileURLToPath(out)+'.tmp';writeFileSync(temp,result);renameSync(temp,out);
-console.log('新增',rows.length-count,'筆；最後編號',id,'；引用',main.querySelectorAll('a.quote').length);
+console.log('新增',rows.length-count,'筆；最後編號',id,'；引用',main.querySelectorAll('a.quote').length,'；修復頭像',repairedAvatars,'；修復回覆',repairedReplies);
