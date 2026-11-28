@@ -1,4 +1,4 @@
-import {readFileSync, writeFileSync, renameSync, mkdirSync} from 'node:fs';
+import {readFileSync, writeFileSync, renameSync, mkdirSync, existsSync, linkSync, unlinkSync} from 'node:fs';
 import {createCipheriv, createDecipheriv, randomBytes, createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
@@ -6,12 +6,14 @@ import {parseHTML} from 'linkedom';
 import {normalize,mapHistory,resolvePair,validRow,isNotice,lastTimestamp} from './reply-mapping.mjs';
 
 // Run from this folder after installing linkedom. Pass the private link on stdin.
-// First run: node publish-original.mjs current.csv previous.csv
+// First creation (only if original/index.html is absent): node publish-original.mjs current.csv previous.csv
+// Legacy migration / first creation require TRUSTED_HISTORY_SHA256 from a separately verified historical CSV.
 // Later runs: node publish-original.mjs current.csv
 const [current, previous] = process.argv.slice(2);
 const key = Buffer.from(readFileSync(0,'utf8').trim().split('#').pop(),'base64url');
 const base = new URL('../index.html',import.meta.url);
 const out = new URL('../original/index.html',import.meta.url);
+if(previous && existsSync(out))throw Error('原文快照已存在，禁止重新初始化');
 const shell = readFileSync(previous ? base : out,'utf8');
 const pattern = /const snapshot = \{ nonce: '([^']+)', ciphertext: '([^']+)' \};/;
 const [,nonce,ciphertext] = shell.match(pattern);
@@ -38,7 +40,17 @@ if(!through)throw Error('CSV 沒有可用時間');
 const throughISO=through.replace(' ','T')+'+08:00';
 const digest=rs=>createHash('sha256').update(JSON.stringify(rs.map(r=>[r.Date,r.User,r.Message]))).digest('hex');
 if(old && digest(old)!==digest(rows.slice(0,count)))throw Error('歷史紀錄未對齊');
-if(!old && main.dataset.exportDigest && main.dataset.exportDigest!==digest(rows.slice(0,count)))throw Error('歷史 CSV 內容已變更');
+const prefixDigest=digest(rows.slice(0,count));
+const lockedDigest=old?null:main.dataset.exportDigest;
+if(lockedDigest){
+  if(lockedDigest!==prefixDigest)throw Error('歷史 CSV 內容已變更');
+}else{
+  // A timestamp anchor alone cannot authenticate legacy CSV contents.
+  // Do not calculate this expected digest from the unverified current input.
+  const trusted=process.env.TRUSTED_HISTORY_SHA256;
+  if(!/^[a-f0-9]{64}$/.test(trusted||''))throw Error('首次遷移需獨立核對的 TRUSTED_HISTORY_SHA256');
+  if(trusted!==prefixDigest)throw Error('歷史 CSV 與可信基準不符');
+}
 
 const esc=s=>s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 if(old){
@@ -163,7 +175,12 @@ if(process.env.REVIEWED_PAIRS){
       const a=document.createElement('a');a.className='quote';a.setAttribute('href',href);
       a.setAttribute('data-reply-kind','quote');a.setAttribute('translate','no');
       const strong=document.createElement('strong');strong.textContent='↳ 回覆 '+original.querySelector('.name').textContent;
-      a.append(strong,document.createElement('br'),originalText(original.querySelector('.original')));
+      a.append(strong,document.createElement('br'));
+      const lines=normalize(originalText(original.querySelector('.original'))).split('\n');
+      for(let i=0;i<lines.length;i++){
+        if(i)a.append(document.createElement('br'));
+        a.append(lines[i]);
+      }
       bubble.prepend(a);addedPairs++;
     }
     let list=original.querySelector('details.replies');
@@ -199,5 +216,11 @@ if(new Set(ids).size!==ids.length || Array.from(main.querySelectorAll('a[href^="
 const iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',key,iv);
 const encrypted=Buffer.concat([cipher.update(document.toString(),'utf8'),cipher.final(),cipher.getAuthTag()]);
 const result=shell.replace(pattern,"const snapshot = { nonce: '"+iv.toString('base64')+"', ciphertext: '"+encrypted.toString('base64')+"' };").replace('<title>KakaoTalk 韓中對照</title>','<title>KakaoTalk 原文</title>');
-mkdirSync(new URL('.',out),{recursive:true});const temp=fileURLToPath(out)+'.tmp';writeFileSync(temp,result);renameSync(temp,out);
+mkdirSync(new URL('.',out),{recursive:true});
+const temp=fileURLToPath(out)+'.'+randomBytes(12).toString('hex')+'.tmp';
+writeFileSync(temp,result,{flag:'wx'});
+try{
+  // Exclusive creation protects against a destination appearing after the initial check.
+  if(previous)linkSync(temp,out);else renameSync(temp,out);
+}finally{if(existsSync(temp))unlinkSync(temp)}
 console.log('新增',rows.length-count,'筆；最後編號',id,'；引用',main.querySelectorAll('a.quote').length,'；修復頭像',repairedAvatars,'；修復回覆',repairedReplies);

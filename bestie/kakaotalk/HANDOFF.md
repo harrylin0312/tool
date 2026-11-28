@@ -67,3 +67,10 @@
 `live/publish-original.mjs` 使用完整 CSV 及 `reply-mapping.mjs` 核對歷史原文，不以列號推算舊 ID。新訊息保存來源列號、完整時間及單列雜湊，歷史僅在唯一匹配後補上。完整前綴雜湊於首次遷移後用於防止後續歷史內容變動。原始快照的既有時間尾端 anchor 仍須先核對；未映射資料不得自動猜測。回覆審核檔仍接受原有 `[[[timestamp,name],[timestamp,name]]]` 格式，也可用 `[timestamp,name,body,rowNumber]` 消除 CSV 歧義（rowNumber 從 1 起算）；若 HTML 映射不唯一、舊引用衝突或順序不符，停止寫入並保留上一版，待人工確認。CSV 不含引用資料，不自動推測。執行 `node live/test-publish-original.mjs` 驗證純映射邏輯；正式發布前仍需以實際 linkedom 執行 CSV、驗證雙向跳轉及手機排版。不得提交 CSV、審核檔、明文或金鑰。
 
 真實匯出可包含日期、暱稱皆空的系統紀錄；保留為原文事件，不補造時間、不加入回覆映射、不產生空日期分隔。快照截止取最後一筆具時間的紀錄。首輪遷移的來源映射不完整時仍不猜測，請保留原始 CSV。
+
+## 第二輪 QA 修正：首次信任與禁止回退
+
+- QA-01：只有原文快照不存在時才能使用雙 CSV 初始化；已有原文一律使用單 CSV 模式。首次寫入使用排他 hard link，避免在檢查後覆蓋其他程序新建的快照。此措施不等同完整的並行更新鎖定。
+- QA-02：沒有 `data-export-digest` 的歷史快照（含雙 CSV 初始化）必須由操作者先核對可信歷史 CSV，再以 `node live/history-digest.mjs /private/trusted.csv [prefix-count]` 計算獨立基準。單 CSV 遷移的 prefix-count 取現有快照 export-count；雙 CSV 初始化取可信 previous.csv 的列數。將結果透過環境變數 `TRUSTED_HISTORY_SHA256` 傳給發布器；不可使用正在驗收的未知 CSV 計算信任值。缺少或不符一律拒絕寫入；完成遷移後只核對快照內已鎖定的前綴雜湊。歷史映射仍採唯一匹配，未匹配資料不猜測。
+- QA-03：新建引用使用明確的 BR 保留原文換行，不改舊引用或 CSS。
+- 回歸：`node live/test-publish-original.mjs` 及 `node live/test-publish-integration.mjs`；第二輪獨立驗收仍需使用正式 linkedom 及真實 CSV、可信歷史基準，覆蓋上述三個故障案例，核對拒絕時輸出逐位元組不變。
